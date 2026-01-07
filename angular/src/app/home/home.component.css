@@ -7,63 +7,9 @@
   width: 100%;
 }
 
-/* --- Search Bar Styling (Final Centering Attempt) --- */
+/* --- Search Bar Styling (Liquid Glass) --- */
 
-/* 1. Main container for centering the form field. */
-.search-bar-container {
-  display: flex;
-  justify-content: center;
-  align-items: center; /* This should vertically center the mat-form-field */
-  padding: 20px 10px;
-  margin-bottom: 20px;
-}
-
-/* 2. Style the mat-form-field directly. */
-.search-input {
-  width: 100%;
-  max-width: 600px;
-}
-
-/* 3. Use ::ng-deep to apply styles to the *internal* flex container of the mat-form-field.
-      This is the most reliable way to control its appearance and padding. */
-
-:host ::ng-deep .search-input .mat-form-field-wrapper {
-  padding: 0; /* Reset wrapper padding */
-}
-
-:host ::ng-deep .search-input .mat-form-field-flex {
-    background-color: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    /* This padding creates the balanced space *inside* the white box, around the text */
-    padding: 0 20px;
-    align-items: center; /* Vertically center the items inside the flex container */
-    height: 56px; /* Give it a fixed height */
-}
-
-/* Remove the default outline and underline that cause visual glitches */
-:host ::ng-deep .search-input .mat-form-field-outline,
-:host ::ng-deep .search-input .mat-form-field-underline {
-    display: none !important;
-}
-
-/* Adjust the infix to remove its own padding/border that can interfere */
-:host ::ng-deep .search-input .mat-form-field-infix {
-    border-top: none;
-    padding: 0; /* Infix padding is handled by the parent flex container now */
-}
-
-/* 4. Style the text and icon for readability */
-.search-input .mat-input-element,
-:host ::ng-deep .search-input .mat-form-field-label {
-    color: black !important;
-}
-.search-input mat-icon {
-    color: rgba(0,0,0,0.7) !important;
-}
-
-
-/* 1. Main container for centering the whole component. */
+/* Main container for centering the liquid glass search bar */
 .search-bar-container {
   display: flex;
   justify-content: center;
@@ -71,53 +17,51 @@
   margin-bottom: 20px;
 }
 
-/* 2. This is the visible white box. It's a flex container to center the form field. */
-.search-input-wrapper {
-  display: flex;
-  align-items: center; /* This is what should vertically center the mat-form-field */
+/* Liquid Glass Search Bar Styles - Inline Version */
+.search-liquid-glass {
   width: 100%;
   max-width: 600px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  /* The padding is important. It creates the space for the form field to be centered in. */
-  padding: 0 15px;
-  /* Let's set a min-height to ensure the vertical centering has space to work with. */
-  min-height: 56px; /* A typical height for a text field area */
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  padding: 0 15px; /* Adjust padding as needed for the input */
+  display: flex;
+  align-items: center; /* Vertically center content */
+  font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  min-height: 56px; /* Match typical mat-form-field height */
 }
 
-/* 3. The mat-form-field itself. It should take up the full width. */
-.search-input {
-    width: 100%;
+/* Overrides for mat-form-field to blend with the liquid glass container */
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-wrapper {
+  padding: 0;
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-infix {
+  border-top: none;
+  padding: 0; /* Let the parent .search-liquid-glass handle vertical padding */
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-underline,
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-outline {
+  display: none !important;
 }
 
-/* 4. Overrides to make the mat-form-field 'invisible' within its styled wrapper */
-:host ::ng-deep .search-input .mat-form-field-wrapper {
-    padding: 0; /* Remove default padding */
+/* Text and icon colors */
+:host ::ng-deep .search-liquid-glass .search-input .mat-input-element,
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-label {
+  color: black !important; /* Ensure text is visible */
 }
-:host ::ng-deep .search-input .mat-form-field-infix {
-    border-top: none; /* Remove default border */
-    padding: 8px 0; /* Minimal vertical padding for the text itself */
-}
-:host ::ng-deep .search-input .mat-form-field-underline,
-:host ::ng-deep .search-input .mat-form-field-outline {
-    display: none !important; /* Hide outline and underline */
+:host ::ng-deep .search-liquid-glass .search-input mat-icon {
+  color: rgba(0,0,0,0.7) !important; /* Ensure icon is visible */
 }
 
-/* 5. Text and icon colors for readability */
-.search-input .mat-input-element,
-:host ::ng-deep .search-input .mat-form-field-label {
-    color: black !important;
-}
-.search-input mat-icon {
-    color: rgba(0,0,0,0.7) !important;
-}
-
-
-
-.search-input {
-  width: 80%; /* Adjust width as needed */
-  max-width: 600px; /* Max width for larger screens */
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .search-liquid-glass {
+    width: 95%;
+    padding: 0 10px;
+  }
 }
 
 .list-view-container {
@@ -278,9 +222,5 @@
     flex-direction: row; /* Buttons side-by-side on small screens */
     width: 100%;
     justify-content: space-around;
-  }
-
-  .search-input {
-    width: 95%; /* Adjust width for smaller screens */
   }
 }
