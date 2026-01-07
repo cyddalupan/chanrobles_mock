@@ -63,7 +63,8 @@ export class HomeComponent implements OnInit {
           category.courses = category.courses.map((course: any) => ({
             ...course,
             category_name: category.category_name,
-            thumbnail: course.upcoming_image_thumbnail || 'https://premierebarreview.com/mock/img/placeholder.jpg'
+<<<<<<< HEAD
+            thumbnail: course.upcoming_image_thumbnail || 'https://topbarassist.com/chanrobles-bar/mock/img/placeholder.jpg'
           }));
           tempAllCourses = tempAllCourses.concat(category.courses);
         });

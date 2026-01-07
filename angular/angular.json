@@ -45,17 +45,14 @@
                 }
               ],
               "outputHashing": "all",
-              "outputPath": "../bar",
-              "baseHref": "/chanrobles-bar/mock/bar/"
-            },
+                          "outputPath": "../bar",
+                          "baseHref": "/chanrobles-bar/mock/bar/"            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
-              "outputPath": "../bar",
-              "baseHref": "/chanrobles-bar/mock/bar/"
-            }
-          },
+                          "outputPath": "../bar",
+                          "baseHref": "/chanrobles-bar/mock/bar/"          },
           "defaultConfiguration": "production"
         },
         "serve": {

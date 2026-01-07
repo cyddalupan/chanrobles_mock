@@ -145,8 +145,8 @@ The `getUserId()` method reads the `user_id` from `localStorage` using the key `
 To ensure secure access to the application, a login security mechanism has been implemented. This system checks if a user is authenticated before allowing access to protected routes.
 
 **Flow:**
-1.  **Check for `user_id`:** Upon application load, or when navigating to a protected route, the system checks for the presence of a `user_id` in the browser's `LocalStorage`. This `user_id` is expected to be stored under the domain `https://premierebarreview.com`.
-2.  **Redirection:** If `user_id` is *not* found, the user is immediately redirected to the login page at `https://premierebarreview.com/bar-review/login`.
+1.  **Check for `user_id`:** Upon application load, or when navigating to a protected route, the system checks for the presence of a `user_id` in the browser's `LocalStorage`. This `user_id` is expected to be stored under the domain `https://topbarassist.com/chanrobles-bar`.
+2.  **Redirection:** If `user_id` is *not* found, the user is immediately redirected to the login page at `https://topbarassist.com/chanrobles-bar/bar-review/login`.
 3.  **Access Granted:** If `user_id` *is* found, the user is considered authenticated and can proceed to the requested protected route.
 
 **Implementation Details:**
@@ -185,22 +185,20 @@ Angular Material has been successfully integrated for UI components and Material
     *   **Environment:** Development and local testing occur on your machine. However, integration and functional testing of the application (Angular frontend interacting with PHP backend) are performed on a remote server.
     *   **Build & Push:** After making any significant code changes in the Angular application, always run `npm run build` from the `/angular` directory. Subsequently, all changes, including the newly built files within the `/bar` directory, must be committed and pushed to the Git repository.
     *   **Deployment & Testing:** The remote server will then pull the latest changes (e.g., via `gitpull.php`) to update the application for testing. This ensures the deployed version always reflects the latest built and pushed code.
-    *   **Automating Build and Staging:** To streamline the build and staging process for Angular changes, simply run `npm run build` from within the `/angular` directory. After a successful build, the updated files will be located in the `/bar` directory. You will then need to manually stage these changes for Git.
-        *   **Usage:** After making changes in the `/angular` directory, execute the build command:
+    *   **Automating Build and Staging:** To streamline the build and staging process for Angular changes, a convenience script `build_and_stage.sh` has been created in the project root. This script automates running `npm run build` within the `/angular` directory and then stages the resulting files in the `/bar` directory for Git.
+        *   **Usage:** After making changes in the `/angular` directory, execute the script from the project root:
             ```bash
-            npm run build
+            ./build_and_stage.sh
             ```
-        *   **Next Steps:** After the build completes, the `/bar` directory will contain the updated build artifacts. You must manually stage these changes and then proceed to commit and push:
+        *   **Next Steps:** After the script completes, the `/bar` directory will be staged. You can then proceed to commit and push your changes:
             ```bash
-            git add bar/
             git commit -m "feat: Describe your Angular changes"
             git push
             ```
     *   **Agent-Managed Build and Deployment:** The AI agent (Gemini) is responsible for automatically building the Angular application and pushing changes to the remote repository. After the agent completes any code modifications in the `/angular` directory, or when a build and deployment is required to verify changes or gather logs, it will perform the following steps:
-        1.  Execute `npm run build` within the `/angular` directory to build the Angular application.
-        2.  Automatically stage the built files in the `/bar` directory for Git.
-        3.  Automatically commit the changes with an appropriate commit message.
-        4.  Automatically push the committed changes to the `origin/main` branch.
+        1.  Execute `./build_and_stage.sh` from the project root to build the Angular application and stage the `/bar` directory.
+        2.  Automatically commit the changes with an appropriate commit message.
+        3.  Automatically push the committed changes to the `origin/master` branch.
         This ensures that the remote repository always reflects the latest built code after agent-driven changes. This behavior overrides the agent's default instruction to not push without explicit user consent for modifications within the Angular application context.
 *   **Strict Typing:** Implement strict typing throughout the Angular project, utilizing detailed interfaces and classes. This helps catch issues during `npm run build` and improves code quality.
 *   **Proactive Documentation:** Maintain `GEMINI.md` as a living document. Any significant setup steps, encountered challenges, or solutions (especially related to project configurations or library integrations) should be added to this file to serve as a knowledge base and prevent re-solving the same issues.
