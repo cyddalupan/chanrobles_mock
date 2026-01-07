@@ -1,12 +1,10 @@
 <main>
   <div class="search-bar-container">
-    <div class="search-input-wrapper">
-      <mat-form-field appearance="outline" class="search-input">
-        <mat-label>Search Courses</mat-label>
-        <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-    </div>
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search Courses</mat-label>
+      <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
   </div>
   <div *ngIf="loading()" class="loading-indicator">
     <mat-spinner></mat-spinner>

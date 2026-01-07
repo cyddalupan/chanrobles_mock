@@ -7,7 +7,61 @@
   width: 100%;
 }
 
-/* --- Search Bar Styling (Centering Fix) --- */
+/* --- Search Bar Styling (Final Centering Attempt) --- */
+
+/* 1. Main container for centering the form field. */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* This should vertically center the mat-form-field */
+  padding: 20px 10px;
+  margin-bottom: 20px;
+}
+
+/* 2. Style the mat-form-field directly. */
+.search-input {
+  width: 100%;
+  max-width: 600px;
+}
+
+/* 3. Use ::ng-deep to apply styles to the *internal* flex container of the mat-form-field.
+      This is the most reliable way to control its appearance and padding. */
+
+:host ::ng-deep .search-input .mat-form-field-wrapper {
+  padding: 0; /* Reset wrapper padding */
+}
+
+:host ::ng-deep .search-input .mat-form-field-flex {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    /* This padding creates the balanced space *inside* the white box, around the text */
+    padding: 0 20px;
+    align-items: center; /* Vertically center the items inside the flex container */
+    height: 56px; /* Give it a fixed height */
+}
+
+/* Remove the default outline and underline that cause visual glitches */
+:host ::ng-deep .search-input .mat-form-field-outline,
+:host ::ng-deep .search-input .mat-form-field-underline {
+    display: none !important;
+}
+
+/* Adjust the infix to remove its own padding/border that can interfere */
+:host ::ng-deep .search-input .mat-form-field-infix {
+    border-top: none;
+    padding: 0; /* Infix padding is handled by the parent flex container now */
+}
+
+/* 4. Style the text and icon for readability */
+.search-input .mat-input-element,
+:host ::ng-deep .search-input .mat-form-field-label {
+    color: black !important;
+}
+.search-input mat-icon {
+    color: rgba(0,0,0,0.7) !important;
+}
+
 
 /* 1. Main container for centering the whole component. */
 .search-bar-container {

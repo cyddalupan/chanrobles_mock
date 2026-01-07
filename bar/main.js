@@ -56655,16 +56655,16 @@ var ApiService = class _ApiService {
 })();
 
 // src/app/home/home.component.ts
-function HomeComponent_div_9_Template(rf, ctx) {
+function HomeComponent_div_8_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 7);
+    \u0275\u0275elementStart(0, "div", 6);
     \u0275\u0275element(1, "mat-spinner");
     \u0275\u0275elementStart(2, "p");
     \u0275\u0275text(3, "Loading courses...");
     \u0275\u0275elementEnd()();
   }
 }
-function HomeComponent_div_10_div_1_p_13_Template(rf, ctx) {
+function HomeComponent_div_9_div_1_p_13_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "p")(1, "strong");
     \u0275\u0275text(2, "Progress:");
@@ -56678,11 +56678,11 @@ function HomeComponent_div_10_div_1_p_13_Template(rf, ctx) {
     \u0275\u0275textInterpolate1(" ", course_r2.progressText);
   }
 }
-function HomeComponent_div_10_div_1_div_14_Template(rf, ctx) {
+function HomeComponent_div_9_div_1_div_14_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 23);
-    \u0275\u0275element(1, "div", 24);
-    \u0275\u0275elementStart(2, "span", 25);
+    \u0275\u0275elementStart(0, "div", 22);
+    \u0275\u0275element(1, "div", 23);
+    \u0275\u0275elementStart(2, "span", 24);
     \u0275\u0275text(3);
     \u0275\u0275pipe(4, "number");
     \u0275\u0275elementEnd()();
@@ -56695,7 +56695,7 @@ function HomeComponent_div_10_div_1_div_14_Template(rf, ctx) {
     \u0275\u0275textInterpolate1("", \u0275\u0275pipeBind2(4, 3, course_r2.progressBarPercentage, "1.0-0"), "%");
   }
 }
-function HomeComponent_div_10_div_1_p_15_Template(rf, ctx) {
+function HomeComponent_div_9_div_1_p_15_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "p")(1, "strong");
     \u0275\u0275text(2, "Average Score:");
@@ -56709,11 +56709,11 @@ function HomeComponent_div_10_div_1_p_15_Template(rf, ctx) {
     \u0275\u0275textInterpolate1(" ", course_r2.averageScore, "%");
   }
 }
-function HomeComponent_div_10_div_1_button_19_Template(rf, ctx) {
+function HomeComponent_div_9_div_1_button_19_Template(rf, ctx) {
   if (rf & 1) {
     const _r4 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "button", 26);
-    \u0275\u0275listener("click", function HomeComponent_div_10_div_1_button_19_Template_button_click_0_listener() {
+    \u0275\u0275elementStart(0, "button", 25);
+    \u0275\u0275listener("click", function HomeComponent_div_9_div_1_button_19_Template_button_click_0_listener() {
       \u0275\u0275restoreView(_r4);
       const course_r2 = \u0275\u0275nextContext().$implicit;
       const ctx_r2 = \u0275\u0275nextContext(2);
@@ -56727,33 +56727,33 @@ function HomeComponent_div_10_div_1_button_19_Template(rf, ctx) {
     \u0275\u0275elementEnd()();
   }
 }
-function HomeComponent_div_10_div_1_Template(rf, ctx) {
+function HomeComponent_div_9_div_1_Template(rf, ctx) {
   if (rf & 1) {
     const _r1 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "div", 11);
-    \u0275\u0275element(1, "img", 12);
-    \u0275\u0275elementStart(2, "div", 13)(3, "div", 14)(4, "h3", 15);
+    \u0275\u0275elementStart(0, "div", 10);
+    \u0275\u0275element(1, "img", 11);
+    \u0275\u0275elementStart(2, "div", 12)(3, "div", 13)(4, "h3", 14);
     \u0275\u0275text(5);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(6, "p", 16);
+    \u0275\u0275elementStart(6, "p", 15);
     \u0275\u0275text(7);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(8, "div", 17)(9, "p")(10, "strong");
+    \u0275\u0275elementStart(8, "div", 16)(9, "p")(10, "strong");
     \u0275\u0275text(11, "Level:");
     \u0275\u0275elementEnd();
     \u0275\u0275text(12);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(13, HomeComponent_div_10_div_1_p_13_Template, 4, 1, "p", 18)(14, HomeComponent_div_10_div_1_div_14_Template, 5, 6, "div", 19)(15, HomeComponent_div_10_div_1_p_15_Template, 4, 1, "p", 18);
+    \u0275\u0275template(13, HomeComponent_div_9_div_1_p_13_Template, 4, 1, "p", 17)(14, HomeComponent_div_9_div_1_div_14_Template, 5, 6, "div", 18)(15, HomeComponent_div_9_div_1_p_15_Template, 4, 1, "p", 17);
     \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(16, "div", 20)(17, "button", 21);
-    \u0275\u0275listener("click", function HomeComponent_div_10_div_1_Template_button_click_17_listener() {
+    \u0275\u0275elementStart(16, "div", 19)(17, "button", 20);
+    \u0275\u0275listener("click", function HomeComponent_div_9_div_1_Template_button_click_17_listener() {
       const course_r2 = \u0275\u0275restoreView(_r1).$implicit;
       const ctx_r2 = \u0275\u0275nextContext(2);
       return \u0275\u0275resetView(ctx_r2.goToExam(course_r2.id));
     });
     \u0275\u0275text(18);
     \u0275\u0275elementEnd();
-    \u0275\u0275template(19, HomeComponent_div_10_div_1_button_19_Template, 5, 0, "button", 22);
+    \u0275\u0275template(19, HomeComponent_div_9_div_1_button_19_Template, 5, 0, "button", 21);
     \u0275\u0275elementEnd()();
   }
   if (rf & 2) {
@@ -56780,17 +56780,17 @@ function HomeComponent_div_10_div_1_Template(rf, ctx) {
     \u0275\u0275property("ngIf", course_r2.hasTakenExam);
   }
 }
-function HomeComponent_div_10_div_2_Template(rf, ctx) {
+function HomeComponent_div_9_div_2_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 27)(1, "p");
+    \u0275\u0275elementStart(0, "div", 26)(1, "p");
     \u0275\u0275text(2, "No courses found.");
     \u0275\u0275elementEnd()();
   }
 }
-function HomeComponent_div_10_Template(rf, ctx) {
+function HomeComponent_div_9_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 8);
-    \u0275\u0275template(1, HomeComponent_div_10_div_1_Template, 20, 10, "div", 9)(2, HomeComponent_div_10_div_2_Template, 3, 0, "div", 10);
+    \u0275\u0275elementStart(0, "div", 7);
+    \u0275\u0275template(1, HomeComponent_div_9_div_1_Template, 20, 10, "div", 8)(2, HomeComponent_div_9_div_2_Template, 3, 0, "div", 9);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -56918,42 +56918,40 @@ var HomeComponent = class _HomeComponent {
   static \u0275fac = function HomeComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _HomeComponent)(\u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(AuthService));
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HomeComponent, selectors: [["app-home"]], decls: 11, vars: 2, consts: [[1, "search-bar-container"], [1, "search-input-wrapper"], ["appearance", "outline", 1, "search-input"], ["matInput", "", "placeholder", "e.g., Civil Law, Bar Exam", 3, "input"], ["matSuffix", ""], ["class", "loading-indicator", 4, "ngIf"], ["class", "list-view-container", 4, "ngIf"], [1, "loading-indicator"], [1, "list-view-container"], ["class", "course-list-item", 4, "ngFor", "ngForOf"], ["class", "no-courses-message", 4, "ngIf"], [1, "course-list-item"], ["alt", "Course Thumbnail", 1, "course-thumbnail-img", 3, "src"], [1, "course-details"], [1, "course-header"], [1, "course-title"], [1, "course-subtitle"], [1, "course-meta"], [4, "ngIf"], ["class", "progress-bar-container", 4, "ngIf"], [1, "course-actions"], ["mat-flat-button", "", "color", "primary", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", "class", "history-button", 3, "click", 4, "ngIf"], [1, "progress-bar-container"], [1, "progress-bar"], [1, "progress-percentage"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", 1, "history-button", 3, "click"], [1, "no-courses-message"]], template: function HomeComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HomeComponent, selectors: [["app-home"]], decls: 10, vars: 2, consts: [[1, "search-bar-container"], ["appearance", "outline", 1, "search-input"], ["matInput", "", "placeholder", "e.g., Civil Law, Bar Exam", 3, "input"], ["matSuffix", ""], ["class", "loading-indicator", 4, "ngIf"], ["class", "list-view-container", 4, "ngIf"], [1, "loading-indicator"], [1, "list-view-container"], ["class", "course-list-item", 4, "ngFor", "ngForOf"], ["class", "no-courses-message", 4, "ngIf"], [1, "course-list-item"], ["alt", "Course Thumbnail", 1, "course-thumbnail-img", 3, "src"], [1, "course-details"], [1, "course-header"], [1, "course-title"], [1, "course-subtitle"], [1, "course-meta"], [4, "ngIf"], ["class", "progress-bar-container", 4, "ngIf"], [1, "course-actions"], ["mat-flat-button", "", "color", "primary", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", "class", "history-button", 3, "click", 4, "ngIf"], [1, "progress-bar-container"], [1, "progress-bar"], [1, "progress-percentage"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", 1, "history-button", 3, "click"], [1, "no-courses-message"]], template: function HomeComponent_Template(rf, ctx) {
     if (rf & 1) {
-      \u0275\u0275elementStart(0, "main")(1, "div", 0)(2, "div", 1)(3, "mat-form-field", 2)(4, "mat-label");
-      \u0275\u0275text(5, "Search Courses");
+      \u0275\u0275elementStart(0, "main")(1, "div", 0)(2, "mat-form-field", 1)(3, "mat-label");
+      \u0275\u0275text(4, "Search Courses");
       \u0275\u0275elementEnd();
-      \u0275\u0275elementStart(6, "input", 3);
-      \u0275\u0275listener("input", function HomeComponent_Template_input_input_6_listener($event) {
+      \u0275\u0275elementStart(5, "input", 2);
+      \u0275\u0275listener("input", function HomeComponent_Template_input_input_5_listener($event) {
         return ctx.applyFilter($event);
       });
       \u0275\u0275elementEnd();
-      \u0275\u0275elementStart(7, "mat-icon", 4);
-      \u0275\u0275text(8, "search");
-      \u0275\u0275elementEnd()()()();
-      \u0275\u0275template(9, HomeComponent_div_9_Template, 4, 0, "div", 5)(10, HomeComponent_div_10_Template, 3, 2, "div", 6);
+      \u0275\u0275elementStart(6, "mat-icon", 3);
+      \u0275\u0275text(7, "search");
+      \u0275\u0275elementEnd()()();
+      \u0275\u0275template(8, HomeComponent_div_8_Template, 4, 0, "div", 4)(9, HomeComponent_div_9_Template, 3, 2, "div", 5);
       \u0275\u0275elementEnd();
     }
     if (rf & 2) {
-      \u0275\u0275advance(9);
+      \u0275\u0275advance(8);
       \u0275\u0275property("ngIf", ctx.loading());
       \u0275\u0275advance();
       \u0275\u0275property("ngIf", !ctx.loading());
     }
-  }, dependencies: [CommonModule, NgForOf, NgIf, MatButtonModule, MatButton, MatIconModule, MatIcon, MatCardModule, MatProgressSpinnerModule, MatProgressSpinner, MatFormFieldModule, MatFormField, MatLabel, MatSuffix, MatInputModule, MatInput, DecimalPipe], styles: ["\n\n.loading-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input-wrapper[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  max-width: 600px;\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 15px;\n  min-height: 56px;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 100%;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 8px 0;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-underline, \n[_nghost-%COMP%]     .search-input .mat-form-field-outline {\n  display: none !important;\n}\n.search-input[_ngcontent-%COMP%]   .mat-input-element[_ngcontent-%COMP%], \n[_nghost-%COMP%]     .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item[_ngcontent-%COMP%]:hover {\n  transform: translateY(-3px);\n}\n.course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details[_ngcontent-%COMP%] {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header[_ngcontent-%COMP%] {\n  margin-bottom: 5px;\n}\n.course-title[_ngcontent-%COMP%] {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle[_ngcontent-%COMP%] {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container[_ngcontent-%COMP%] {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar[_ngcontent-%COMP%] {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage[_ngcontent-%COMP%] {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions[_ngcontent-%COMP%]   button[_ngcontent-%COMP%] {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses[_ngcontent-%COMP%] {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details[_ngcontent-%COMP%] {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions[_ngcontent-%COMP%] {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input[_ngcontent-%COMP%] {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */"] });
+  }, dependencies: [CommonModule, NgForOf, NgIf, MatButtonModule, MatButton, MatIconModule, MatIcon, MatCardModule, MatProgressSpinnerModule, MatProgressSpinner, MatFormFieldModule, MatFormField, MatLabel, MatSuffix, MatInputModule, MatInput, DecimalPipe], styles: ["\n\n.loading-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 100%;\n  max-width: 600px;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-flex {\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 20px;\n  align-items: center;\n  height: 56px;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-outline, \n[_nghost-%COMP%]     .search-input .mat-form-field-underline {\n  display: none !important;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 0;\n}\n.search-input[_ngcontent-%COMP%]   .mat-input-element[_ngcontent-%COMP%], \n[_nghost-%COMP%]     .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-bar-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input-wrapper[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  max-width: 600px;\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 15px;\n  min-height: 56px;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 100%;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 8px 0;\n}\n[_nghost-%COMP%]     .search-input .mat-form-field-underline, \n[_nghost-%COMP%]     .search-input .mat-form-field-outline {\n  display: none !important;\n}\n.search-input[_ngcontent-%COMP%]   .mat-input-element[_ngcontent-%COMP%], \n[_nghost-%COMP%]     .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item[_ngcontent-%COMP%]:hover {\n  transform: translateY(-3px);\n}\n.course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details[_ngcontent-%COMP%] {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header[_ngcontent-%COMP%] {\n  margin-bottom: 5px;\n}\n.course-title[_ngcontent-%COMP%] {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle[_ngcontent-%COMP%] {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container[_ngcontent-%COMP%] {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar[_ngcontent-%COMP%] {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage[_ngcontent-%COMP%] {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions[_ngcontent-%COMP%]   button[_ngcontent-%COMP%] {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses[_ngcontent-%COMP%] {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details[_ngcontent-%COMP%] {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions[_ngcontent-%COMP%] {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input[_ngcontent-%COMP%] {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */"] });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(HomeComponent, [{
     type: Component,
     args: [{ selector: "app-home", standalone: true, imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatFormFieldModule, MatInputModule], template: `<main>
   <div class="search-bar-container">
-    <div class="search-input-wrapper">
-      <mat-form-field appearance="outline" class="search-input">
-        <mat-label>Search Courses</mat-label>
-        <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-    </div>
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search Courses</mat-label>
+      <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
   </div>
   <div *ngIf="loading()" class="loading-indicator">
     <mat-spinner></mat-spinner>
@@ -57004,7 +57002,7 @@ var HomeComponent = class _HomeComponent {
       <p>No courses found.</p>
     </div>
   </div>
-</main>`, styles: ["/* src/app/home/home.component.css */\n.loading-indicator {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container {\n  display: flex;\n  justify-content: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input-wrapper {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  max-width: 600px;\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 15px;\n  min-height: 56px;\n}\n.search-input {\n  width: 100%;\n}\n:host ::ng-deep .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n:host ::ng-deep .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 8px 0;\n}\n:host ::ng-deep .search-input .mat-form-field-underline,\n:host ::ng-deep .search-input .mat-form-field-outline {\n  display: none !important;\n}\n.search-input .mat-input-element,\n:host ::ng-deep .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input mat-icon {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-input {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item:hover {\n  transform: translateY(-3px);\n}\n.course-list-item .course-thumbnail-img {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header {\n  margin-bottom: 5px;\n}\n.course-title {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta p {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions button {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button mat-icon {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item .course-thumbnail-img {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */\n"] }]
+</main>`, styles: ["/* src/app/home/home.component.css */\n.loading-indicator {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input {\n  width: 100%;\n  max-width: 600px;\n}\n:host ::ng-deep .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n:host ::ng-deep .search-input .mat-form-field-flex {\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 20px;\n  align-items: center;\n  height: 56px;\n}\n:host ::ng-deep .search-input .mat-form-field-outline,\n:host ::ng-deep .search-input .mat-form-field-underline {\n  display: none !important;\n}\n:host ::ng-deep .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 0;\n}\n.search-input .mat-input-element,\n:host ::ng-deep .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input mat-icon {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-bar-container {\n  display: flex;\n  justify-content: center;\n  padding: 20px 10px;\n  margin-bottom: 20px;\n}\n.search-input-wrapper {\n  display: flex;\n  align-items: center;\n  width: 100%;\n  max-width: 600px;\n  background-color: white;\n  border-radius: 12px;\n  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);\n  padding: 0 15px;\n  min-height: 56px;\n}\n.search-input {\n  width: 100%;\n}\n:host ::ng-deep .search-input .mat-form-field-wrapper {\n  padding: 0;\n}\n:host ::ng-deep .search-input .mat-form-field-infix {\n  border-top: none;\n  padding: 8px 0;\n}\n:host ::ng-deep .search-input .mat-form-field-underline,\n:host ::ng-deep .search-input .mat-form-field-outline {\n  display: none !important;\n}\n.search-input .mat-input-element,\n:host ::ng-deep .search-input .mat-form-field-label {\n  color: black !important;\n}\n.search-input mat-icon {\n  color: rgba(0, 0, 0, 0.7) !important;\n}\n.search-input {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item:hover {\n  transform: translateY(-3px);\n}\n.course-list-item .course-thumbnail-img {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header {\n  margin-bottom: 5px;\n}\n.course-title {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta p {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions button {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button mat-icon {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item .course-thumbnail-img {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */\n"] }]
   }], () => [{ type: ApiService }, { type: Router }, { type: AuthService }], null);
 })();
 (() => {
