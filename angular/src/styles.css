@@ -17,7 +17,8 @@
 }
 
 input::placeholder {
-  color: white;
+  color: white !important;
+  opacity: 1;
 }
 
 .app-banner {

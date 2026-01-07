@@ -290,3 +290,8 @@
     justify-content: space-around;
   }
 }
+
+:host ::ng-deep input::placeholder {
+  color: white !important;
+  opacity: 1;
+}

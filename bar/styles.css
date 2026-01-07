@@ -210,7 +210,8 @@ body {
   margin: 0;
 }
 input::placeholder {
-  color: white;
+  color: white !important;
+  opacity: 1;
 }
 .app-banner {
   width: 100%;
