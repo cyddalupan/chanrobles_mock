@@ -20,6 +20,78 @@ The HTML structure is the same for both versions.
 
 ---
 
+## Liquid Glass Search Bar Styles
+
+This section documents the liquid glass styling applied to the search bar in `home.component.css`.
+
+```css
+/* --- Search Bar Styling (Liquid Glass) --- */
+
+/* Main container for centering the liquid glass search bar */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 10px;
+  margin-bottom: 20px;
+}
+
+/* Liquid Glass Search Bar Styles - Inline Version */
+.search-liquid-glass {
+  width: 100%;
+  max-width: 600px;
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  padding: 0 15px; /* Adjust padding as needed for the input */
+  display: flex;
+  align-items: center; /* Vertically center content */
+  font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  min-height: 56px; /* Match typical mat-form-field height */
+}
+
+/* Overrides for mat-form-field to blend with the liquid glass container */
+:host ::ng-deep .search-liquid-glass .mat-mdc-form-field {
+  width: 100%;
+  padding-top: 17px;
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-wrapper {
+  padding: 0;
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-infix {
+  border-top: none;
+  padding: 0; /* Let the parent .search-liquid-glass handle vertical padding */
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-underline,
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-outline {
+  display: none !important;
+}
+
+/* Text, placeholder and icon colors */
+:host ::ng-deep .search-liquid-glass .search-input .mat-input-element,
+:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-label {
+  color: white !important;
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+:host ::ng-deep .search-liquid-glass .search-input mat-icon {
+  color: rgba(255,255,255,0.7) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .search-liquid-glass {
+    width: 95%;
+    padding: 0 10px;
+  }
+}
+```
+
+---
+
 ## 1. Floating (Fixed Position) Styles
 
 This version floats at the bottom of the viewport and does not affect the layout of other page elements. This is the version currently implemented in `app.component.ts`.
@@ -97,6 +169,7 @@ This version floats at the bottom of the viewport and does not affect the layout
     font-size: 12px;
   }
 }
+
 ```
 
 ---

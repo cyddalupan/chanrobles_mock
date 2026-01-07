@@ -54,10 +54,13 @@
 /* Text and icon colors */
 :host ::ng-deep .search-liquid-glass .search-input .mat-input-element,
 :host ::ng-deep .search-liquid-glass .search-input .mat-form-field-label {
-  color: black !important; /* Ensure text is visible */
+  color: white !important; /* Ensure text is visible */
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important; /* White placeholder color */
 }
 :host ::ng-deep .search-liquid-glass .search-input mat-icon {
-  color: rgba(0,0,0,0.7) !important; /* Ensure icon is visible */
+  color: rgba(255,255,255,0.7) !important; /* Ensure icon is visible */
 }
 
 /* Responsive adjustments */
