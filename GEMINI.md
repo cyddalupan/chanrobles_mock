@@ -79,6 +79,7 @@ The `ai.php` script constructs a detailed system prompt for the OpenAI API (`gpt
 **Security:**
 *   Communication between the Angular frontend and the PHP backend will be via plain JSON over HTTPS.
 *   Sensitive data, such as API keys and database credentials, will be stored in a `.env` file at the project root. This file should not be committed to version control.
+    *   **New API Keys for Weather Background:** For the weather background feature, you will need API keys from OpenWeatherMap and Unsplash. Please create a `.env` file in the project root (if it doesn't exist) by copying `.env.example` and filling in `OPENWEATHER_API_KEY` and `UNSPLASH_API_KEY` with your actual keys.
 
 ### Database Interaction Notes
 
