@@ -114,142 +114,12 @@
 
 .course-actions {
   display: flex;
-  justify-content: space-around; /* Distribute buttons with space */
-  align-items: center;
-  width: 100%;
-  gap: 8px; /* Add a gap between buttons */
-}
-
-.course-actions button {
-  font-size: 0.85rem; /* Smaller font size for all buttons */
-  line-height: 1.2;
-}
-
-.history-button {
-  display: flex;
-  align-items: center;
-}
-
-.history-button mat-icon {
-  margin-right: 5px; /* Reduced space between icon and text */
-  font-size: 18px; /* Smaller icon size */
-  height: 18px;
-  width: 18px;
-}
-
-.progress-bar-container {
-  width: 100%;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 5px;
-  position: relative;
-  height: 20px; /* Fixed height for the progress bar */
-}
-
-.progress-bar {
-  height: 100%;
-  background-color: #4CAF50; /* Green color for progress */
-  width: 0%; /* Initial width, will be set by Angular */
-  text-align: center;
-  color: white;
-  line-height: 20px; /* Center text vertically */
-  border-radius: 5px;
-}
-
-.progress-percentage {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  line-height: 20px; /* Center text vertically over the bar */
-  color: #333; /* Darker color for percentage text */
-  font-size: 0.8em;
-  top: 0;
-  left: 0;
-}
-
-.no-courses {
-  text-align: center;
-  grid-column: 1 / -1; /* Center across all columns */
-  padding: 40px;
-  color: #999;
-  font-style: italic;
-}
-
-.list-view-container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px; /* Spacing between list items */
-  padding: 20px;
-}
-
-.course-list-item {
-  display: flex;
-  align-items: center;
-  background-color: #ffffff; /* White background for list items */
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  padding: 15px;
-  transition: transform 0.2s ease-in-out; /* Smooth hover effect */
-}
-
-.course-list-item:hover {
-  transform: translateY(-3px); /* Lift effect on hover */
-}
-
-.course-list-item .course-thumbnail-img {
-  width: 120px; /* Smaller thumbnail for list view */
-  height: 90px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-right: 15px;
-  flex-shrink: 0; /* Prevent image from shrinking */
-}
-
-.course-details {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  margin-right: 15px; /* Space between details and actions */
-}
-
-.course-header {
-  margin-bottom: 5px;
-}
-
-.course-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  margin: 0;
-  color: #3f51b5; /* Primary color */
-}
-
-.course-subtitle {
-  font-size: 0.9em;
-  color: #757575;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limit to 2 lines */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4em;
-  max-height: 2.8em; /* 2 lines * 1.4em line-height */
-}
-
-.course-meta p {
-  margin: 2px 0;
-  font-size: 0.85em;
-  color: #555;
-}
-
-.course-actions {
-  display: flex;
-  flex-direction: column; /* Stack buttons vertically */
+  flex-direction: row; /* Changed from column to row for desktop view */
   gap: 8px; /* Space between buttons */
   flex-shrink: 0; /* Prevent actions from shrinking */
-  min-width: 150px; /* Ensure buttons have enough space */
+  /* removed min-width: 150px; */
+  align-items: center; /* Align items for horizontal layout */
+  justify-content: flex-end; /* Push actions to the right */
 }
 
 .course-actions button {
@@ -290,7 +160,6 @@ footer {
 
 /* Liquid Glass Notification Styles */
 .liquid-glass-notification {
-  /* Removed position: fixed and related properties */
   margin: 20px auto; /* Center horizontally and provide vertical spacing */
   width: 90%;
   max-width: 400px;
@@ -303,7 +172,6 @@ footer {
   padding: 12px 18px;
   display: flex;
   align-items: center;
-  /* Removed z-index as it's not fixed anymore */
   color: white;
   font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
 }
@@ -328,7 +196,7 @@ footer {
   font-size: 16px;
   font-weight: 600;
   color: white;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Added text-shadow */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .notification-text p {
@@ -336,7 +204,7 @@ footer {
   font-size: 13px;
   line-height: 1.3;
   color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Added text-shadow */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive adjustments */
@@ -360,7 +228,7 @@ footer {
   }
 
   .course-actions {
-    flex-direction: row;
+    flex-direction: row; /* Buttons side-by-side on small screens */
     width: 100%;
     justify-content: space-around;
   }
@@ -373,9 +241,8 @@ footer {
 @media (max-width: 600px) {
   .liquid-glass-notification {
     width: 95%;
-    /* Removed bottom and other fixed positioning props here too */
     padding: 12px;
-    margin-top: 15px; /* Adjust margin for smaller screens */
+    margin-top: 15px;
     margin-bottom: 15px;
   }
   .notification-image {
