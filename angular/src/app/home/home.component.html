@@ -28,7 +28,7 @@
             <div class="progress-bar" [style.width.%]="course.progressBarPercentage"></div>
             <span class="progress-percentage">{{ course.progressBarPercentage | number:'1.0-0' }}%</span>
           </div>
-          <p *ngIf="course.averageScore"><strong>Average Score:</strong> {{ course.averageScore }}%</p>
+          <p *ngIf="course.averageScore !== null && course.averageScore !== undefined"><strong>Average Score:</strong> {{ course.averageScore }}</p>
         </div>
       </div>
       <div class="course-actions">

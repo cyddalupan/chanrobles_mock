@@ -74,11 +74,34 @@
   color: rgba(0,0,0,0.7) !important; /* Reverted to dark as per user request */
 }
 
-/* Change the default underline/border color to white (for both normal and focused states) */
+/* Outline border color for mat-form-field with appearance="outline" */
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__leading,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__notch,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-notched-outline__trailing {
+  border-color: white !important;
+}
+
+/* Outline border color when the mat-form-field is focused */
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-glass--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: white !important;
+}
+
+/* Outline border color when hovering over the mat-form-field (and not focused or disabled) */
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline__leading,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline__notch,
+:host ::ng-deep .search-liquid-glass .search-input .mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-notched-outline__trailing {
+  border-color: rgba(255, 255, 255, 0.8) !important; /* Slightly more opaque white on hover */
+}
+
+/* Remove previous less specific underline/ripple styles */
+/*
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-underline,
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-ripple {
   background-color: rgba(255, 255, 255, 0.7) !important;
 }
+*/
 
 /* Responsive adjustments */
 @media (max-width: 600px) {
