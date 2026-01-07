@@ -7,6 +7,10 @@
   width: 100%;
 }
 
+.loading-indicator p {
+  color: white;
+}
+
 /* --- Search Bar Styling (Liquid Glass) --- */
 
 /* Main container for centering the liquid glass search bar */

@@ -1,4 +1,4 @@
-<mat-toolbar color="primary" class="liquid-glass-toolbar">
+<mat-toolbar color="primary">
   <button mat-icon-button (click)="goBack()">
     <mat-icon>arrow_back</mat-icon>
   </button>
@@ -11,7 +11,7 @@
     <p>Loading exam history...</p>
   </div>
 
-  <mat-card *ngIf="error" class="error-card liquid-glass-card">
+  <mat-card *ngIf="error" class="error-card">
     <mat-card-content>
       <mat-icon color="warn">error</mat-icon>
       <p>{{ error }}</p>
@@ -19,7 +19,7 @@
   </mat-card>
 
   <div *ngIf="!loading && !error && historyEntries.length === 0" class="no-history-message">
-    <mat-card class="liquid-glass-card">
+    <mat-card>
       <mat-card-content>
         <p>No exam history found for this course.</p>
         <button mat-flat-button color="primary" (click)="goBack()">Go Back</button>

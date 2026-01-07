@@ -2,6 +2,8 @@
   padding: 20px;
   max-width: 900px;
   margin: 20px auto;
+  background-color: #f5f5f5; /* Light grey background for the container */
+  border-radius: 8px;
 }
 
 .loading-indicator, .no-history-message {
@@ -11,22 +13,14 @@
   justify-content: center;
   padding: 40px;
   text-align: center;
-}
-
-/* Liquid Glass Card styles (reused from exam-page.css for consistency) */
-.liquid-glass-card {
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(25px) saturate(150%);
-  -webkit-backdrop-filter: blur(25px) saturate(150%);
-  border-radius: 13px; /* Slightly more rounded corners for liquid glass */
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-  font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  color: white; /* Default text color for liquid glass */
+  color: #333;
 }
 
 .error-card {
   margin: 20px 0;
+  background-color: #f8d7da; /* Light red for errors */
+  color: #721c24; /* Dark red text for errors */
+  border: 1px solid #f5c6cb;
 }
 
 .error-card mat-card-content {
@@ -36,175 +30,117 @@
 }
 
 .error-card mat-icon {
-  font-size: 30px;
-  width: 30px;
-  height: 30px;
-  color: white; /* Ensure icon is visible on liquid glass */
-}
-
-.error-card p {
-  color: white; /* Ensure text is visible on liquid glass */
-  font-size: 1.1em;
+  color: #721c24;
 }
 
 .history-accordion {
   margin-top: 20px;
 }
 
-:host ::ng-deep .mat-expansion-panel {
-  background: transparent !important;
+.mat-expansion-panel {
+  margin-bottom: 15px !important;
+  border-radius: 8px !important;
+  overflow: hidden;
 }
 
-/* Mat Expansion Panel Header styling */
-:host ::ng-deep .mat-expansion-panel-header {
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.4) !important; /* Liquid glass background */
-  backdrop-filter: blur(25px) saturate(150%);
-  -webkit-backdrop-filter: blur(25px) saturate(150%);
-  border-radius: 13px 13px 0 0; /* Match liquid glass card corners */
-  color: white !important;
-  margin-bottom: 0; /* Remove default margin */
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-bottom: none; /* No bottom border as content will follow */
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-}
-
-:host ::ng-deep .mat-expansion-panel-header:hover {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Mat Expansion Panel Content styling */
-:host ::ng-deep .mat-expansion-panel-content {
-  background-color: rgba(0, 0, 0, 0.4); /* Darker liquid glass background */
-  backdrop-filter: blur(25px) saturate(150%); /* Added backdrop-filter */
-  -webkit-backdrop-filter: blur(25px) saturate(150%); /* Added webkit-backdrop-filter */
-  border-radius: 0 0 13px 13px; /* Match liquid glass card corners for bottom */
-  border: 1px solid rgba(255, 255, 255, 0.5); /* Consistent border */
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Added box-shadow */
-  margin-bottom: 15px; /* Space between panels */
-  padding: 0 24px 16px 24px; /* Adjust padding to match header */
-}
-
-/* Hide the default content wrapper padding */
-:host ::ng-deep .mat-expansion-panel-body {
-  padding: 0 !important;
+.mat-expansion-panel-header {
+  background-color: white;
+  border-bottom: 1px solid #ddd;
 }
 
 .mat-panel-title {
   font-weight: 500;
-  color: white;
-  font-size: 1.2em;
+  color: #333;
 }
 
 .mat-panel-description {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  font-size: 1em;
+  color: #555;
+}
+
+.mat-expansion-panel-content {
+  background-color: white;
 }
 
 .question-text-container {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
   padding: 16px;
   border-radius: 4px;
   margin-bottom: 16px;
-  color: white;
+  border: 1px solid #eee;
 }
 
-.question-text-container h3 {
-  margin-top: 0;
-  color: white;
-  font-size: 1.1em;
-}
-
-.score-pass {
-  color: #8bc34a;
-  font-weight: bold;
-}
-
-.score-fail {
-  color: #ef5350;
-  font-weight: bold;
-}
-
-.history-detail-card {
-  margin: 10px 0;
-  background: transparent; /* Make it transparent */
-}
-
+.question-text-container h3,
 .history-detail-card h3 {
-  color: white;
-  margin-top: 20px;
-  margin-bottom: 10px;
+  margin-top: 0;
+  color: #333;
   font-size: 1.1em;
+  margin-bottom: 10px;
 }
 
 .history-detail-card p {
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: rgba(255, 255, 255, 0.9);
+  color: #333;
   margin-bottom: 15px;
   font-size: 1em;
+  line-height: 1.6;
+}
+
+.score-pass {
+  color: #28a745;
+  font-weight: bold;
+}
+
+.score-fail {
+  color: #dc3545;
+  font-weight: bold;
 }
 
 .feedback-content {
   margin-top: 10px;
-  color: white !important; /* Force all text to be white */
+  color: #333; /* Ensure feedback text is dark */
 }
 
-/* Styling for tables within feedback content for liquid glass */
+/* Default table styles */
 .feedback-content table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 15px;
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  overflow: hidden;
+  background-color: white;
+  border: 1px solid #ddd;
 }
 
 .feedback-content th,
 .feedback-content td {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 8px;
+  border: 1px solid #ddd;
+  padding: 12px;
   text-align: left;
-  color: white;
-  font-size: 1em;
+  color: #333;
 }
 
 .feedback-content th {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: #f2f2f2;
 }
 
 .feedback-content tr:nth-child(even) {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #f9f9f9;
 }
 
 .feedback-content ul, .feedback-content ol {
     list-style-type: disc;
     padding-left: 20px;
     margin-top: 10px;
-    color: white;
-    font-size: 1em;
+    color: #333;
 }
 
 .retake-button {
   margin-top: 16px;
 }
 
-/* Liquid Glass Toolbar */
-.liquid-glass-toolbar {
-  background-color: rgba(0, 0, 0, 0.4) !important; /* Important to override Angular Material default */
-  backdrop-filter: blur(25px) saturate(150%);
-  -webkit-backdrop-filter: blur(25px) saturate(150%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+mat-toolbar {
+  background-color: #3f51b5; /* Default primary color */
   color: white;
-}
-
-.liquid-glass-toolbar .mat-icon-button,
-.liquid-glass-toolbar span {
-  color: white !important;
-  font-size: 1.3em;
 }
