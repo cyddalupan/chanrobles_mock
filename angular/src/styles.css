@@ -60,12 +60,7 @@ COLOR VARIABLES
 GLOBAL
 ========================= */
 *{box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif}
-body {
-  margin: 0;
-  padding-top: 200px; /* Add padding to body equal to banner height */
-  background: linear-gradient(to bottom right, #000080, #4169E1); /* Dark Royal Blue to Royal Blue */
-  background-attachment: fixed; /* Ensures the background covers the entire viewport even with scrolling */
-}
+
 /* =========================
 NAVBAR (DARK GREEN)
 ========================= */
@@ -138,4 +133,20 @@ padding:8px 22px;
 border:none;
 border-radius:6px;
 font-weight:bold;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding-top: 200px; /* Add padding to body equal to banner height */
+  background: linear-gradient(to bottom right, #000080, #4169E1); /* Dark Royal Blue to Royal Blue */
+  background-attachment: fixed; /* Ensures the background covers the entire viewport even with scrolling */
+  background-image: var(--dynamic-background-image); /* Use the CSS variable for dynamic background */
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transition: background-image 1s ease-in-out; /* Smooth transition for background change */
 }

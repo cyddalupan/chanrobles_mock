@@ -248,16 +248,6 @@ footer {
     Arial,
     sans-serif;
 }
-body {
-  margin: 0;
-  padding-top: 200px;
-  background:
-    linear-gradient(
-      to bottom right,
-      #000080,
-      #4169E1);
-  background-attachment: fixed;
-}
 .navbar {
   background:
     linear-gradient(
@@ -334,6 +324,25 @@ body {
   border: none;
   border-radius: 6px;
   font-weight: bold;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  padding-top: 200px;
+  background:
+    linear-gradient(
+      to bottom right,
+      #000080,
+      #4169E1);
+  background-attachment: fixed;
+  background-image: var(--dynamic-background-image);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transition: background-image 1s ease-in-out;
 }
 
 /* angular:styles/global:styles */

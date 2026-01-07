@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["angular:styles/component:css;87c94c51a6b13008553df6226e45d1e1a560dcc29cd62bd274986408a62e107b;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts"],
-  "sourcesContent": ["\n    :host {\n      display: block;\n      height: 100%;\n    }\n    .app-background {\n      background-size: cover;\n      background-position: center center;\n      background-repeat: no-repeat;\n      transition: background-image 1s ease-in-out; /* Smooth transition for background change */\n    }\n  "],
-  "mappings": ";AACI;AACE,WAAS;AACT,UAAQ;AACV;AACA,CAAC;AACC,mBAAiB;AACjB,uBAAqB,OAAO;AAC5B,qBAAmB;AACnB,cAAY,iBAAiB,GAAG;AAClC;",
+  "sources": ["angular:styles/component:css;c63aac4e1d1ce1074d0fb61b93c3d082a38ddfc40b5cc09fdd9a596f2e08e21b;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts"],
+  "sourcesContent": ["\n    :host {\n      display: block;\n      height: 100%;\n    }\n  "],
+  "mappings": ";AACI;AACE,WAAS;AACT,UAAQ;AACV;",
   "names": []
 }

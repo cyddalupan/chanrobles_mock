@@ -35,6 +35,10 @@
 }
 
 /* Overrides for mat-form-field to blend with the liquid glass container */
+:host ::ng-deep .search-liquid-glass .mat-mdc-form-field {
+  width: 100%;
+  padding-top: 17px;
+}
 :host ::ng-deep .search-liquid-glass .search-input .mat-form-field-wrapper {
   padding: 0;
 }

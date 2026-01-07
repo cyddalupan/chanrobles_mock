@@ -13,26 +13,17 @@ import { Subject, takeUntil } from 'rxjs'; // Import Subject and takeUntil
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet, HeaderComponent],
   template: `
-    <div class="app-background" [style.background-image]="backgroundStyle">
-      <router-outlet></router-outlet>
-    </div>
+    <router-outlet></router-outlet>
   `,
   styles: [`
     :host {
       display: block;
       height: 100%;
     }
-    .app-background {
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      transition: background-image 1s ease-in-out; /* Smooth transition for background change */
-    }
   `]
 })
 export class App implements OnInit, OnDestroy { // Implement OnInit and OnDestroy
   protected readonly title = signal('Mock Bar App');
-  backgroundStyle: string = 'url(https://via.placeholder.com/1920x1080?text=Loading...)'; // Default/placeholder background
 
   private destroy$ = new Subject<void>(); // Subject to handle unsubscription
 
@@ -43,10 +34,10 @@ export class App implements OnInit, OnDestroy { // Implement OnInit and OnDestro
       .pipe(takeUntil(this.destroy$))
       .subscribe(url => {
         if (url) {
-          this.backgroundStyle = `url(${url})`;
+          document.body.style.setProperty('--dynamic-background-image', `url(${url})`);
         } else {
           // Fallback to a default image or no image if fetching fails
-          this.backgroundStyle = 'none'; // Or a default local image
+          document.body.style.setProperty('--dynamic-background-image', 'none');
         }
       });
   }
