@@ -1,12 +1,12 @@
-[02-Jan-2026 21:36:48 America/Chicago] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '620-5' for key 'user_question_retake' in /home2/iwebphil/premierebarreview.com/mock/api/db.php:73
+[02-Jan-2026 21:36:48 America/Chicago] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '620-5' for key 'user_question_retake' in /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php:73
 Stack trace:
-#0 /home2/iwebphil/premierebarreview.com/mock/api/db.php(73): mysqli_stmt->execute()
-#1 /home2/iwebphil/premierebarreview.com/mock/api/db.php(104): executeQuery('\n      INSERT I...', Array)
+#0 /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php(73): mysqli_stmt->execute()
+#1 /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php(104): executeQuery('\n      INSERT I...', Array)
 #2 {main}
-  thrown in /home2/iwebphil/premierebarreview.com/mock/api/db.php on line 73
-[06-Jan-2026 12:00:34 America/Chicago] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '620-5' for key 'user_question_retake' in /home2/iwebphil/premierebarreview.com/mock/api/db.php:73
+  thrown in /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php on line 73
+[06-Jan-2026 12:00:34 America/Chicago] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate entry '620-5' for key 'user_question_retake' in /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php:73
 Stack trace:
-#0 /home2/iwebphil/premierebarreview.com/mock/api/db.php(73): mysqli_stmt->execute()
-#1 /home2/iwebphil/premierebarreview.com/mock/api/db.php(104): executeQuery('\n      INSERT I...', Array)
+#0 /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php(73): mysqli_stmt->execute()
+#1 /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php(104): executeQuery('\n      INSERT I...', Array)
 #2 {main}
-  thrown in /home2/iwebphil/premierebarreview.com/mock/api/db.php on line 73
+  thrown in /home2/iwebphil/topbarassist.com/chanrobles-bar/mock/api/db.php on line 73

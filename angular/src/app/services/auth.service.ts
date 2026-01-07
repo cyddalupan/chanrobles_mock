@@ -5,9 +5,9 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly LOGIN_URL = 'https://premierebarreview.com/bar-review/login';
+  private readonly LOGIN_URL = 'https://topbarassist.com/chanrobles-bar/bar-review/login';
   private readonly LOCAL_STORAGE_USER_ID_KEY = 'user_id';
-  private readonly LOCAL_STORAGE_DOMAIN = 'https://premierebarreview.com'; // Not directly used by localStorage, but for context
+  private readonly LOCAL_STORAGE_DOMAIN = 'https://topbarassist.com'; // Not directly used by localStorage, but for context
 
   constructor(private router: Router) {}
 

@@ -144,8 +144,8 @@ The `getUserId()` method reads the `user_id` from `localStorage` using the key `
 To ensure secure access to the application, a login security mechanism has been implemented. This system checks if a user is authenticated before allowing access to protected routes.
 
 **Flow:**
-1.  **Check for `user_id`:** Upon application load, or when navigating to a protected route, the system checks for the presence of a `user_id` in the browser's `LocalStorage`. This `user_id` is expected to be stored under the domain `https://premierebarreview.com`.
-2.  **Redirection:** If `user_id` is *not* found, the user is immediately redirected to the login page at `https://premierebarreview.com/bar-review/login`.
+1.  **Check for `user_id`:** Upon application load, or when navigating to a protected route, the system checks for the presence of a `user_id` in the browser's `LocalStorage`. This `user_id` is expected to be stored under the domain `https://topbarassist.com/chanrobles-bar`.
+2.  **Redirection:** If `user_id` is *not* found, the user is immediately redirected to the login page at `https://topbarassist.com/chanrobles-bar/bar-review/login`.
 3.  **Access Granted:** If `user_id` *is* found, the user is considered authenticated and can proceed to the requested protected route.
 
 **Implementation Details:**
