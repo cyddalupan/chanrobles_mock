@@ -244,7 +244,12 @@ footer {
 }
 body {
   margin: 0;
-  background: #fff;
+  background:
+    linear-gradient(
+      to bottom right,
+      #000080,
+      #4169E1);
+  background-attachment: fixed;
 }
 .navbar {
   background:

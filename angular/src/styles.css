@@ -53,7 +53,11 @@ COLOR VARIABLES
 GLOBAL
 ========================= */
 *{box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif}
-body{margin:0;background:#fff}
+body {
+  margin: 0;
+  background: linear-gradient(to bottom right, #000080, #4169E1); /* Dark Royal Blue to Royal Blue */
+  background-attachment: fixed; /* Ensures the background covers the entire viewport even with scrolling */
+}
 
 /* =========================
 NAVBAR (DARK GREEN)
