@@ -10,32 +10,39 @@
 .search-bar-container {
   display: flex;
   justify-content: center;
-  padding: 15px; /* Slightly reduced padding */
+  padding: 15px 25px; /* Balanced padding: top/bottom 15px, left/right 25px */
   width: 90%; /* Reduce width from 100% */
   max-width: 700px; /* Set a max-width for the container */
   margin: 0 auto 20px auto; /* Center the container and add bottom margin */
-  background: rgba(255, 255, 255, 0.3); /* Increased opacity for better readability */
+  background: rgba(255, 255, 255, 0.7); /* Significantly increased opacity for better readability, more solid frosted effect */
   border-radius: 15px; /* Slightly more rounded corners */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for better definition */
-  border: 1px solid rgba(255, 255, 255, 0.4); /* Slightly less transparent border */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Subtle shadow for depth */
+  border: 1px solid rgba(255, 255, 255, 0.8); /* More solid white border */
   backdrop-filter: blur(8px); /* Reduced blur for better readability */
   -webkit-backdrop-filter: blur(8px); /* Safari support */
 }
 
+.search-input {
+  /* Ensure the mat-form-field itself has balanced internal spacing */
+  width: 100%; /* Make sure the input itself takes full width of its container */
+}
+
+/* Mat-label, input element, and placeholder styling */
 .search-input .mat-form-field-label,
 .search-input .mat-input-element::placeholder { /* Target placeholder as well */
   color: black !important; /* Ensure label/placeholder is dark */
-  text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.8); /* Subtle white shadow */
+  text-shadow: 0px 0px 1px rgba(255, 255, 255, 0.6); /* Very subtle white shadow, less prominent */
 }
 
 .search-input .mat-input-element {
   color: black !important; /* Ensure the input text is black */
-  text-shadow: 0px 0px 2px rgba(255, 255, 255, 0.8); /* Subtle white shadow */
+  text-shadow: 0px 0px 1px rgba(255, 255, 255, 0.6); /* Very subtle white shadow */
+  padding: 8px 0; /* Adjust vertical padding within the input for balance */
 }
 
 /* Adjust the MatFormField outline color for better visibility */
 .search-input .mat-form-field-appearance-outline .mat-form-field-outline {
-  color: rgba(0, 0, 0, 0.6) !important; /* Make the outline darker for contrast */
+  color: rgba(150, 150, 150, 0.8) !important; /* Lighter but visible outline */
 }
 
 .search-input .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
