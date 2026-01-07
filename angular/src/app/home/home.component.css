@@ -13,6 +13,9 @@
   padding: 20px;
   width: 100%;
   box-sizing: border-box; /* Include padding in the element's total width and height */
+  background-color: #f5f5f5; /* Light grey background to make it stand out */
+  border-radius: 8px; /* Slightly rounded corners */
+  margin-bottom: 20px; /* Space below the search bar */
 }
 
 .search-input {

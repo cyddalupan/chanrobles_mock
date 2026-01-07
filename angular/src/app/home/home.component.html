@@ -51,6 +51,8 @@
         </button>
       </div>
     </div>
-    <!-- We might need a message if allCourses is empty, but for now, omitting the no-courses message -->
+    <div *ngIf="filteredCourses().length === 0" class="no-courses-message">
+      <p>No courses found.</p>
+    </div>
   </div>
 </main>
