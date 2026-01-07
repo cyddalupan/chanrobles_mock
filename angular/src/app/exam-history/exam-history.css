@@ -51,6 +51,10 @@
   margin-top: 20px;
 }
 
+:host ::ng-deep .mat-expansion-panel {
+  background: transparent !important;
+}
+
 /* Mat Expansion Panel Header styling */
 :host ::ng-deep .mat-expansion-panel-header {
   padding: 16px 24px;
@@ -124,6 +128,7 @@
 
 .history-detail-card {
   margin: 10px 0;
+  background: transparent; /* Make it transparent */
 }
 
 .history-detail-card h3 {
