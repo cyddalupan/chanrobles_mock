@@ -23,16 +23,10 @@ import { Subject, takeUntil } from 'rxjs'; // Import Subject and takeUntil
       height: 100%;
     }
     .app-background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
       transition: background-image 1s ease-in-out; /* Smooth transition for background change */
-      z-index: -1; /* Ensure it stays behind other content */
     }
   `]
 })

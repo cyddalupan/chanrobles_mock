@@ -1,7 +1,7 @@
 {
   "version": 3,
-  "sources": ["angular:styles/component:css;e2e2f66d3e6be6f17a6fa06e334fe13aa3afe4845cdc8da6b5ad8265af35f3c6;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts"],
-  "sourcesContent": ["\n    :host {\n      display: block;\n      height: 100%;\n    }\n    .app-background {\n      position: fixed;\n      top: 0;\n      left: 0;\n      width: 100%;\n      height: 100%;\n      background-size: cover;\n      background-position: center center;\n      background-repeat: no-repeat;\n      transition: background-image 1s ease-in-out; /* Smooth transition for background change */\n      z-index: -1; /* Ensure it stays behind other content */\n    }\n  "],
-  "mappings": ";AACI;AACE,WAAS;AACT,UAAQ;AACV;AACA,CAAC;AACC,YAAU;AACV,OAAK;AACL,QAAM;AACN,SAAO;AACP,UAAQ;AACR,mBAAiB;AACjB,uBAAqB,OAAO;AAC5B,qBAAmB;AACnB,cAAY,iBAAiB,GAAG;AAChC,WAAS;AACX;",
+  "sources": ["angular:styles/component:css;87c94c51a6b13008553df6226e45d1e1a560dcc29cd62bd274986408a62e107b;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts"],
+  "sourcesContent": ["\n    :host {\n      display: block;\n      height: 100%;\n    }\n    .app-background {\n      background-size: cover;\n      background-position: center center;\n      background-repeat: no-repeat;\n      transition: background-image 1s ease-in-out; /* Smooth transition for background change */\n    }\n  "],
+  "mappings": ";AACI;AACE,WAAS;AACT,UAAQ;AACV;AACA,CAAC;AACC,mBAAiB;AACjB,uBAAqB,OAAO;AAC5B,qBAAmB;AACnB,cAAY,iBAAiB,GAAG;AAClC;",
   "names": []
 }

@@ -61819,7 +61819,7 @@ var App = class _App {
     if (rf & 2) {
       \u0275\u0275styleProp("background-image", ctx.backgroundStyle);
     }
-  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet], styles: ["\n\n[_nghost-%COMP%] {\n  display: block;\n  height: 100%;\n}\n.app-background[_ngcontent-%COMP%] {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  background-size: cover;\n  background-position: center center;\n  background-repeat: no-repeat;\n  transition: background-image 1s ease-in-out;\n  z-index: -1;\n}\n/*# sourceMappingURL=app.css.map */"] });
+  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet], styles: ["\n\n[_nghost-%COMP%] {\n  display: block;\n  height: 100%;\n}\n.app-background[_ngcontent-%COMP%] {\n  background-size: cover;\n  background-position: center center;\n  background-repeat: no-repeat;\n  transition: background-image 1s ease-in-out;\n}\n/*# sourceMappingURL=app.css.map */"] });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(App, [{
@@ -61828,11 +61828,11 @@ var App = class _App {
     <div class="app-background" [style.background-image]="backgroundStyle">
       <router-outlet></router-outlet>
     </div>
-  `, styles: ["/* angular:styles/component:css;e2e2f66d3e6be6f17a6fa06e334fe13aa3afe4845cdc8da6b5ad8265af35f3c6;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts */\n:host {\n  display: block;\n  height: 100%;\n}\n.app-background {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  background-size: cover;\n  background-position: center center;\n  background-repeat: no-repeat;\n  transition: background-image 1s ease-in-out;\n  z-index: -1;\n}\n/*# sourceMappingURL=app.css.map */\n"] }]
+  `, styles: ["/* angular:styles/component:css;87c94c51a6b13008553df6226e45d1e1a560dcc29cd62bd274986408a62e107b;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts */\n:host {\n  display: block;\n  height: 100%;\n}\n.app-background {\n  background-size: cover;\n  background-position: center center;\n  background-repeat: no-repeat;\n  transition: background-image 1s ease-in-out;\n}\n/*# sourceMappingURL=app.css.map */\n"] }]
   }], () => [{ type: WeatherBackgroundService }], null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 39 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 33 });
 })();
 
 // src/main.ts

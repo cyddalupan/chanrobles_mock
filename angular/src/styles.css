@@ -4,9 +4,16 @@
   width: 100%;
   height: 200px; /* Define a fixed height for the container */
   overflow: hidden; /* Hide anything that overflows */
-  position: relative; /* Establish a positioning context for the absolute image */
+  position: fixed; /* Make the header fixed */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Ensure it stays on top */
   text-align: center;
   background: #eaeaea;
+}
+
+.banner-container h1 {
+  margin: 0; /* Remove default h1 margin */
 }
 
 .app-banner {
@@ -55,10 +62,10 @@ GLOBAL
 *{box-sizing:border-box;font-family:"Segoe UI",Arial,sans-serif}
 body {
   margin: 0;
+  padding-top: 200px; /* Add padding to body equal to banner height */
   background: linear-gradient(to bottom right, #000080, #4169E1); /* Dark Royal Blue to Royal Blue */
   background-attachment: fixed; /* Ensures the background covers the entire viewport even with scrolling */
 }
-
 /* =========================
 NAVBAR (DARK GREEN)
 ========================= */
