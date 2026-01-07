@@ -209,6 +209,9 @@ body {
 .banner-container h1 {
   margin: 0;
 }
+input::placeholder {
+  color: white;
+}
 .app-banner {
   width: 100%;
   height: 100%;

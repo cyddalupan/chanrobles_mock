@@ -16,6 +16,10 @@
   margin: 0; /* Remove default h1 margin */
 }
 
+input::placeholder {
+  color: white;
+}
+
 .app-banner {
   width: 100%;
   height: 100%;
