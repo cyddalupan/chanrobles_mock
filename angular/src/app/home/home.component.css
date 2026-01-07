@@ -7,80 +7,56 @@
   width: 100%;
 }
 
-/* --- Search Bar Styling (Recode) --- */
+/* --- Search Bar Styling (Simple White) --- */
 
-/* 1. This is the main container, used for centering. */
+/* 1. Main container for centering */
 .search-bar-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 20px 10px;
   margin-bottom: 20px;
 }
 
-/* 2. This is the new wrapper div that creates the "iPhone Notification" glass effect. */
+/* 2. Style the wrapper with the white background and shadow */
 .search-input-wrapper {
   width: 100%;
   max-width: 600px;
-  background: rgba(110, 110, 110, 0.25); /* Darker, more realistic glass effect */
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border-radius: 20px; /* More rounded corners like iOS notifications */
-  border: 1px solid rgba(255, 255, 255, 0.125); /* Subtle light-catching border */
-  padding: 4px; /* A small padding to create space around the input field */
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  padding: 0 15px; /* Padding will be horizontal, vertical alignment by flex */
+  display: flex;
+  align-items: center;
 }
 
-/* 3. This is the <mat-form-field> itself. We make it transparent to live inside our wrapper. */
+/* 3. Style the mat-form-field to be transparent and fit inside the wrapper */
 .search-input {
-  width: 100%;
+    width: 100%;
 }
 
-/* 4. Crucial overrides to remove ALL default Material styling that interferes with our design. */
-
-/* Use ::ng-deep carefully to pierce component encapsulation for these specific overrides. */
-
-/* Remove the mat-form-field's own background */
-:host ::ng-deep .search-input .mat-form-field-flex {
-  background-color: transparent !important;
-  padding: 0 12px; /* Add horizontal padding inside the input area */
-}
-
-/* Remove the connecting line/underline */
+/* Forcefully remove default outline/underline from mat-form-field */
+:host ::ng-deep .search-input .mat-form-field-outline,
 :host ::ng-deep .search-input .mat-form-field-underline {
-  display: none;
+    display: none !important;
 }
 
-/* Completely remove the outline, this should fix the "bottom border" issue. */
-:host ::ng-deep .search-input .mat-form-field-outline {
-  display: none;
+/* Remove padding from the wrapper and adjust infix */
+:host ::ng-deep .search-input .mat-form-field-wrapper {
+    padding-bottom: 0;
 }
-
-/* Adjust the infix padding to vertically center the text. The requested 20px of space. */
 :host ::ng-deep .search-input .mat-form-field-infix {
-  padding: 20px 0 !important;
-  border-top: none;
+    border-top: none;
+    padding: 12px 0; /* Add some balanced vertical padding for the text */
 }
 
-/* 5. Style the content inside the input for high readability against the blurred background. */
-
-/* Style the label (placeholder text) */
+/* Style the text and icon for a white background */
+.search-input .mat-input-element,
 :host ::ng-deep .search-input .mat-form-field-label {
-  color: rgba(255, 255, 255, 0.7) !important; /* Light text for dark glass */
-  font-weight: 500;
+    color: black !important;
 }
-:host ::ng-deep .search-input.mat-form-field.mat-focused .mat-form-field-label {
-    color: white !important; /* Brighter white when focused */
-}
-
-/* Style the text the user types */
-.search-input .mat-input-element {
-  color: white !important; /* Bright white text */
-  font-weight: 500;
-}
-
-/* Style the search icon */
 .search-input mat-icon {
-  color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(0,0,0,0.7) !important;
 }
 
 
