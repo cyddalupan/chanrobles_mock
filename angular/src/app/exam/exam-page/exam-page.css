@@ -13,12 +13,12 @@
 
 /* Liquid Glass Card styles for exam page */
 .liquid-glass-card {
-  background-color: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(20px) saturate(200%);
-  -webkit-backdrop-filter: blur(20px) saturate(200%);
-  border-radius: 13px; /* Slightly more rounded corners for liquid glass */
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
   font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   color: white; /* Default text color for liquid glass */
 }
@@ -43,19 +43,23 @@
   margin-top: 20px;
   margin-bottom: 10px;
   color: white; /* Ensure headings are visible */
+  font-size: 1.2em;
 }
 
 .mat-mdc-card-content p {
   margin-bottom: 10px;
   color: rgba(255, 255, 255, 0.9); /* Ensure paragraph text is visible */
+  font-size: 1em;
 }
 
 .mat-mdc-card-title {
   color: white;
+  font-size: 1.5em;
 }
 
 .mat-mdc-card-subtitle {
   color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1em;
 }
 
 /* Style for the AI feedback HTML table */
@@ -64,7 +68,7 @@
   border-collapse: collapse;
   margin-top: 15px;
   margin-bottom: 15px;
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent background for table */
+  background-color: rgba(0, 0, 0, 0.1); /* Darker transparent background for table */
   border-radius: 8px;
   overflow: hidden;
 }
@@ -74,10 +78,11 @@
   padding: 8px;
   text-align: left;
   color: white;
+  font-size: 1em;
 }
 
 :host ::ng-deep th {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.2); /* Darker transparent background */
 }
 
 :host ::ng-deep .table-bordered {
@@ -90,11 +95,11 @@
 }
 
 :host ::ng-deep .table-striped tbody tr:nth-of-type(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.05); /* Darker transparent background */
 }
 
 :host ::ng-deep .table-hover tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.1); /* Darker transparent background */
 }
 
 /* Custom style for the 'Back to Course List' button */
@@ -125,7 +130,7 @@
 
 /* For appearance="fill" mat-form-field */
 :host ::ng-deep .mat-mdc-form-field.mat-mdc-form-field-appearance-fill .mat-mdc-form-field-flex {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent background for input */
+  background-color: rgba(0, 0, 0, 0.1); /* Darker transparent background for input */
   border-radius: 8px;
 }
 :host ::ng-deep .mat-mdc-form-field.mat-mdc-form-field-appearance-fill .mat-mdc-form-field-flex .mat-mdc-form-field-infix {

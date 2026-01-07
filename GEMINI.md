@@ -203,6 +203,9 @@ Angular Material has been successfully integrated for UI components and Material
         This ensures that the remote repository always reflects the latest built code after agent-driven changes. This behavior overrides the agent's default instruction to not push without explicit user consent for modifications within the Angular application context.
 *   **Strict Typing:** Implement strict typing throughout the Angular project, utilizing detailed interfaces and classes. This helps catch issues during `npm run build` and improves code quality.
 *   **Proactive Documentation:** Maintain `GEMINI.md` as a living document. Any significant setup steps, encountered challenges, or solutions (especially related to project configurations or library integrations) should be added to this file to serve as a knowledge base and prevent re-solving the same issues.
+*   **Global Style Updates (January 2026):**
+    *   **Text Size:** All application text has been globally increased to improve readability. Specific font sizes are defined within component-specific CSS files (e.g., `home.component.css`, `exam-page.css`, `exam-history.css`).
+    *   **Liquid Glass Backgrounds:** All liquid glass elements now feature a darker, more prominent background. This involves adjusting `rgba()` values for `background-color` (e.g., `rgba(0, 0, 0, 0.4)`), `border` (e.g., `rgba(255, 255, 255, 0.5)`), and `box-shadow` to enhance visual depth and contrast. Detailed style properties are documented in `GLASS.md`.
 
 ---
 
