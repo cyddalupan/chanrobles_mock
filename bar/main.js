@@ -49430,524 +49430,1427 @@ var MatProgressSpinnerModule = class _MatProgressSpinnerModule {
   }], null, null);
 })();
 
-// src/environments/environment.ts
-var environment = {
-  production: false,
-  API_BASE_URL: "/chanrobles-bar/mock/api"
+// node_modules/@angular/cdk/fesm2022/observers-private.mjs
+var loopLimitExceededErrorHandler = (e) => {
+  if (e instanceof ErrorEvent && e.message === "ResizeObserver loop limit exceeded") {
+    console.error(`${e.message}. This could indicate a performance issue with your app. See https://github.com/WICG/resize-observer/blob/master/explainer.md#error-handling`);
+  }
 };
-
-// src/app/services/api.service.ts
-var ApiService = class _ApiService {
-  http;
-  authService;
-  apiUrl = environment.API_BASE_URL;
-  constructor(http, authService) {
-    this.http = http;
-    this.authService = authService;
-  }
-  // Helper to get userId
-  getUserId() {
-    return this.authService.getUserId();
-  }
-  postData(endpoint, payload) {
-    const headers = new HttpHeaders({
-      "Content-Type": "application/json"
-    });
-    return this.http.post(`${this.apiUrl}/${endpoint}`, payload, { headers }).pipe(catchError((error) => {
-      console.error("API call error:", error);
-      return throwError(() => error.error || "Server error");
-    }));
-  }
-  getExamHistory(userId, courseId) {
-    const query = `
-      SELECT
-          da.id AS diag_ans_id,
-          da.question_id,
-          da.batch_id AS course_id,
-          COALESCE(dar.answer, da.answer) AS user_answer,
-          COALESCE(dar.score, da.score) AS score,
-          COALESCE(dar.feedback, da.feedback) AS feedback,
-          COALESCE(dar.date_created, da.date_created) AS date_created,
-          qn.q_question AS question_text,
-          qn.q_answer AS expected_answer
-      FROM
-          diag_ans da
-      JOIN
-          quiz_new qn ON da.question_id = qn.q_id
-      LEFT JOIN
-          diag_ans_retake dar ON da.user_id = dar.user_id AND da.question_id = dar.question_id
-      WHERE
-          da.user_id = ? AND da.batch_id = ?
-      ORDER BY
-          date_created DESC;
-    `;
-    const params = [userId, courseId];
-    return this.getDbData(query, params).pipe(map((response) => {
-      if (Array.isArray(response)) {
-        return response;
-      } else if (response && response.error) {
-        throw new Error(response.error);
-      } else {
-        throw new Error("Unknown error fetching exam history");
-      }
-    }), catchError((error) => {
-      console.error("Error fetching exam history:", error);
-      return throwError(() => new Error("Could not fetch exam history."));
-    }));
-  }
-  getDbData(query, params = []) {
-    const payload = { query, params };
-    return this.postData("db.php", payload);
-  }
-  // New method to call AI for grading
-  gradeAnswer(userAnswer, expectedAnswer) {
-    const payload = { user_answer: userAnswer, expected_answer: expectedAnswer };
-    return this.postData("ai.php", payload);
-  }
-  // New method to get the next unanswered question for a course
-  getNextQuestion(courseId, userId) {
-    const query = `
-      SELECT q_id, q_question, q_answer
-      FROM quiz_new
-      WHERE q_course_id = ?
-        AND q_id NOT IN (SELECT question_id FROM diag_ans WHERE user_id = ? AND batch_id = ?)
-      ORDER BY q_id ASC
-      LIMIT 1;
-    `;
-    const params = [courseId, userId, courseId];
-    return this.getDbData(query, params);
-  }
-  // New method to get a specific question by ID
-  getQuestionById(questionId) {
-    const query = `
-      SELECT q_id, q_question, q_answer
-      FROM quiz_new
-      WHERE q_id = ?;
-    `;
-    const params = [questionId];
-    return this.getDbData(query, params);
-  }
-  // New method to save graded answer to diag_ans
-  saveDiagAns(userId, courseId, questionId, answer, score, feedback) {
-    const query = `
-      INSERT INTO diag_ans (user_id, batch_id, question_id, answer, score, feedback, date_created)
-      VALUES (?, ?, ?, ?, ?, ?, NOW());
-    `;
-    const params = [userId, courseId, questionId, answer, score, feedback];
-    return this.getDbData(query, params);
-  }
-  // New method to save graded retake answer to diag_ans_retake
-  saveRetakeAnswer(userId, courseId, questionId, answer, score, feedback) {
-    const query = `
-      INSERT INTO diag_ans_retake (user_id, batch_id, question_id, answer, score, feedback, date_created)
-      VALUES (?, ?, ?, ?, ?, ?, NOW());
-    `;
-    const params = [userId, courseId, questionId, answer, score, feedback];
-    return this.getDbData(query, params);
-  }
-  // New method to get exam status for a specific course for the current user
-  getExamStatusForCourse(courseId, userId) {
-    const query = `
-      SELECT
-        (SELECT COUNT(q_id) FROM quiz_new WHERE q_course_id = ?) AS total_questions,
-        (SELECT COUNT(question_id) FROM diag_ans WHERE user_id = ? AND batch_id = ?) AS answered_questions;
-    `;
-    const params = [courseId, userId, courseId];
-    return this.getDbData(query, params).pipe(
-      // Corrected: pass params here
-      map((response) => {
-        const totalQuestions = response[0]?.total_questions || 0;
-        const answeredQuestions = response[0]?.answered_questions || 0;
-        return {
-          completed: totalQuestions > 0 && answeredQuestions >= totalQuestions,
-          answeredCount: answeredQuestions,
-          totalQuestions
-        };
-      })
-    );
-  }
-  // New method to get detailed diag_ans for a user, including the answer
-  getDiagAnsDetailForUser(userId, courseId) {
-    const query = `
-      SELECT id, batch_id, question_id, answer, score, feedback, date_created
-      FROM diag_ans
-      WHERE user_id = ? AND batch_id = ?;
-    `;
-    const params = [userId, courseId];
-    return this.getDbData(query, params);
-  }
-  getDiagAnsForUser() {
-    const userId = this.getUserId();
-    if (!userId) {
-      console.error("User ID not found. Cannot fetch diag_ans.");
-      return throwError(() => new Error("User not logged in."));
+var SingleBoxSharedResizeObserver = class {
+  _box;
+  _destroyed = new Subject();
+  _resizeSubject = new Subject();
+  _resizeObserver;
+  _elementObservables = /* @__PURE__ */ new Map();
+  constructor(_box) {
+    this._box = _box;
+    if (typeof ResizeObserver !== "undefined") {
+      this._resizeObserver = new ResizeObserver((entries) => this._resizeSubject.next(entries));
     }
-    const query = `
-      SELECT batch_id, question_id, score
-      FROM diag_ans
-      WHERE user_id = ?;
-    `;
-    const params = [userId];
-    return this.getDbData(query, params);
   }
-  getQuizQuestionsCountPerCourse() {
-    const query = `
-      SELECT q_course_id, COUNT(q_id) AS total_questions
-      FROM quiz_new
-      GROUP BY q_course_id;
-    `;
-    return this.getDbData(query);
+  observe(target) {
+    if (!this._elementObservables.has(target)) {
+      this._elementObservables.set(target, new Observable((observer) => {
+        const subscription = this._resizeSubject.subscribe(observer);
+        this._resizeObserver?.observe(target, {
+          box: this._box
+        });
+        return () => {
+          this._resizeObserver?.unobserve(target);
+          subscription.unsubscribe();
+          this._elementObservables.delete(target);
+        };
+      }).pipe(filter((entries) => entries.some((entry) => entry.target === target)), shareReplay({
+        bufferSize: 1,
+        refCount: true
+      }), takeUntil(this._destroyed)));
+    }
+    return this._elementObservables.get(target);
   }
-  getCategoriesWithCourses() {
-    const query = `
-        /* AGGREGATE_COURSES */
-        SELECT
-            c.id AS category_id,
-            c.name AS category_name,
-            co.id,
-            co.title,
-            co.short_description,
-            co.upcoming_image_thumbnail,
-            co.price,
-            co.level
-        FROM
-            category c
-        LEFT JOIN
-            course co ON c.id = co.category_id
-        ORDER BY
-            c.name, co.id;
-      `;
-    return this.getDbData(query);
+  destroy() {
+    this._destroyed.next();
+    this._destroyed.complete();
+    this._resizeSubject.complete();
+    this._elementObservables.clear();
   }
-  static \u0275fac = function ApiService_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _ApiService)(\u0275\u0275inject(HttpClient), \u0275\u0275inject(AuthService));
+};
+var SharedResizeObserver = class _SharedResizeObserver {
+  _cleanupErrorListener;
+  _observers = /* @__PURE__ */ new Map();
+  _ngZone = inject2(NgZone);
+  constructor() {
+    if (typeof ResizeObserver !== "undefined" && (typeof ngDevMode === "undefined" || ngDevMode)) {
+      this._ngZone.runOutsideAngular(() => {
+        const renderer = inject2(RendererFactory2).createRenderer(null, null);
+        this._cleanupErrorListener = renderer.listen("window", "error", loopLimitExceededErrorHandler);
+      });
+    }
+  }
+  ngOnDestroy() {
+    for (const [, observer] of this._observers) {
+      observer.destroy();
+    }
+    this._observers.clear();
+    this._cleanupErrorListener?.();
+  }
+  observe(target, options) {
+    const box = options?.box || "content-box";
+    if (!this._observers.has(box)) {
+      this._observers.set(box, new SingleBoxSharedResizeObserver(box));
+    }
+    return this._observers.get(box).observe(target);
+  }
+  static \u0275fac = function SharedResizeObserver_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _SharedResizeObserver)();
   };
-  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ApiService, factory: _ApiService.\u0275fac, providedIn: "root" });
+  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
+    token: _SharedResizeObserver,
+    factory: _SharedResizeObserver.\u0275fac,
+    providedIn: "root"
+  });
 };
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ApiService, [{
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(SharedResizeObserver, [{
     type: Injectable,
     args: [{
       providedIn: "root"
     }]
-  }], () => [{ type: HttpClient }, { type: AuthService }], null);
+  }], () => [], null);
 })();
 
-// src/app/home/home.component.ts
-function HomeComponent_div_1_Template(rf, ctx) {
+// node_modules/@angular/material/fesm2022/_form-field-chunk.mjs
+var _c06 = ["notch"];
+var _c14 = ["matFormFieldNotchedOutline", ""];
+var _c23 = ["*"];
+var _c33 = ["iconPrefixContainer"];
+var _c43 = ["textPrefixContainer"];
+var _c52 = ["iconSuffixContainer"];
+var _c6 = ["textSuffixContainer"];
+var _c7 = ["textField"];
+var _c8 = ["*", [["mat-label"]], [["", "matPrefix", ""], ["", "matIconPrefix", ""]], [["", "matTextPrefix", ""]], [["", "matTextSuffix", ""]], [["", "matSuffix", ""], ["", "matIconSuffix", ""]], [["mat-error"], ["", "matError", ""]], [["mat-hint", 3, "align", "end"]], [["mat-hint", "align", "end"]]];
+var _c9 = ["*", "mat-label", "[matPrefix], [matIconPrefix]", "[matTextPrefix]", "[matTextSuffix]", "[matSuffix], [matIconSuffix]", "mat-error, [matError]", "mat-hint:not([align='end'])", "mat-hint[align='end']"];
+function MatFormField_ng_template_0_Conditional_0_Conditional_2_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 2);
-    \u0275\u0275element(1, "mat-spinner");
-    \u0275\u0275elementStart(2, "p");
-    \u0275\u0275text(3, "Loading courses...");
-    \u0275\u0275elementEnd()();
+    \u0275\u0275element(0, "span", 21);
   }
 }
-function HomeComponent_div_2_mat_card_1_p_12_Template(rf, ctx) {
+function MatFormField_ng_template_0_Conditional_0_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p")(1, "strong");
-    \u0275\u0275text(2, "Progress:");
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(3);
+    \u0275\u0275elementStart(0, "label", 20);
+    \u0275\u0275projection(1, 1);
+    \u0275\u0275conditionalCreate(2, MatFormField_ng_template_0_Conditional_0_Conditional_2_Template, 1, 0, "span", 21);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const course_r2 = \u0275\u0275nextContext().$implicit;
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate1(" ", course_r2.progressText);
-  }
-}
-function HomeComponent_div_2_mat_card_1_div_13_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 12);
-    \u0275\u0275element(1, "div", 13);
-    \u0275\u0275elementStart(2, "span", 14);
-    \u0275\u0275text(3);
-    \u0275\u0275pipe(4, "number");
-    \u0275\u0275elementEnd()();
-  }
-  if (rf & 2) {
-    const course_r2 = \u0275\u0275nextContext().$implicit;
-    \u0275\u0275advance();
-    \u0275\u0275styleProp("width", course_r2.progressBarPercentage, "%");
+    const ctx_r1 = \u0275\u0275nextContext(2);
+    \u0275\u0275property("floating", ctx_r1._shouldLabelFloat())("monitorResize", ctx_r1._hasOutline())("id", ctx_r1._labelId);
+    \u0275\u0275attribute("for", ctx_r1._control.disableAutomaticLabeling ? null : ctx_r1._control.id);
     \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate1("", \u0275\u0275pipeBind2(4, 3, course_r2.progressBarPercentage, "1.0-0"), "%");
+    \u0275\u0275conditional(!ctx_r1.hideRequiredMarker && ctx_r1._control.required ? 2 : -1);
   }
 }
-function HomeComponent_div_2_mat_card_1_p_14_Template(rf, ctx) {
+function MatFormField_ng_template_0_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "p")(1, "strong");
-    \u0275\u0275text(2, "Average Score:");
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(3);
+    \u0275\u0275conditionalCreate(0, MatFormField_ng_template_0_Conditional_0_Template, 3, 5, "label", 20);
+  }
+  if (rf & 2) {
+    const ctx_r1 = \u0275\u0275nextContext();
+    \u0275\u0275conditional(ctx_r1._hasFloatingLabel() ? 0 : -1);
+  }
+}
+function MatFormField_Conditional_4_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275element(0, "div", 7);
+  }
+}
+function MatFormField_Conditional_6_Conditional_1_ng_template_0_Template(rf, ctx) {
+}
+function MatFormField_Conditional_6_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275template(0, MatFormField_Conditional_6_Conditional_1_ng_template_0_Template, 0, 0, "ng-template", 13);
+  }
+  if (rf & 2) {
+    \u0275\u0275nextContext(2);
+    const labelTemplate_r3 = \u0275\u0275reference(1);
+    \u0275\u0275property("ngTemplateOutlet", labelTemplate_r3);
+  }
+}
+function MatFormField_Conditional_6_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 9);
+    \u0275\u0275conditionalCreate(1, MatFormField_Conditional_6_Conditional_1_Template, 1, 1, null, 13);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const course_r2 = \u0275\u0275nextContext().$implicit;
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate1(" ", course_r2.averageScore, "%");
+    const ctx_r1 = \u0275\u0275nextContext();
+    \u0275\u0275property("matFormFieldNotchedOutlineOpen", ctx_r1._shouldLabelFloat());
+    \u0275\u0275advance();
+    \u0275\u0275conditional(!ctx_r1._forceDisplayInfixLabel() ? 1 : -1);
   }
 }
-function HomeComponent_div_2_mat_card_1_button_18_Template(rf, ctx) {
+function MatFormField_Conditional_7_Template(rf, ctx) {
   if (rf & 1) {
-    const _r4 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "button", 15);
-    \u0275\u0275listener("click", function HomeComponent_div_2_mat_card_1_button_18_Template_button_click_0_listener() {
-      \u0275\u0275restoreView(_r4);
-      const course_r2 = \u0275\u0275nextContext().$implicit;
-      const ctx_r2 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r2.goToHistory(course_r2.id));
-    });
-    \u0275\u0275elementStart(1, "mat-icon");
-    \u0275\u0275text(2, "history");
+    \u0275\u0275elementStart(0, "div", 10, 2);
+    \u0275\u0275projection(2, 2);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(3, "span");
-    \u0275\u0275text(4, "History");
-    \u0275\u0275elementEnd()();
   }
 }
-function HomeComponent_div_2_mat_card_1_Template(rf, ctx) {
+function MatFormField_Conditional_8_Template(rf, ctx) {
   if (rf & 1) {
-    const _r1 = \u0275\u0275getCurrentView();
-    \u0275\u0275elementStart(0, "mat-card", 5);
-    \u0275\u0275element(1, "img", 6);
-    \u0275\u0275elementStart(2, "mat-card-header")(3, "mat-card-title");
-    \u0275\u0275text(4);
+    \u0275\u0275elementStart(0, "div", 11, 3);
+    \u0275\u0275projection(2, 3);
     \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(5, "mat-card-subtitle");
-    \u0275\u0275text(6);
-    \u0275\u0275elementEnd()();
-    \u0275\u0275elementStart(7, "mat-card-content")(8, "p")(9, "strong");
-    \u0275\u0275text(10, "Level:");
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(11);
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(12, HomeComponent_div_2_mat_card_1_p_12_Template, 4, 1, "p", 7)(13, HomeComponent_div_2_mat_card_1_div_13_Template, 5, 6, "div", 8)(14, HomeComponent_div_2_mat_card_1_p_14_Template, 4, 1, "p", 7);
-    \u0275\u0275elementEnd();
-    \u0275\u0275elementStart(15, "mat-card-actions", 9)(16, "button", 10);
-    \u0275\u0275listener("click", function HomeComponent_div_2_mat_card_1_Template_button_click_16_listener() {
-      const course_r2 = \u0275\u0275restoreView(_r1).$implicit;
-      const ctx_r2 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r2.goToExam(course_r2.id));
-    });
-    \u0275\u0275text(17);
-    \u0275\u0275elementEnd();
-    \u0275\u0275template(18, HomeComponent_div_2_mat_card_1_button_18_Template, 5, 0, "button", 11);
-    \u0275\u0275elementEnd()();
+  }
+}
+function MatFormField_Conditional_10_ng_template_0_Template(rf, ctx) {
+}
+function MatFormField_Conditional_10_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275template(0, MatFormField_Conditional_10_ng_template_0_Template, 0, 0, "ng-template", 13);
   }
   if (rf & 2) {
-    const course_r2 = ctx.$implicit;
-    \u0275\u0275advance();
-    \u0275\u0275property("src", course_r2.thumbnail, \u0275\u0275sanitizeUrl);
-    \u0275\u0275advance(3);
-    \u0275\u0275textInterpolate(course_r2.title);
-    \u0275\u0275advance(2);
-    \u0275\u0275textInterpolate(course_r2.short_description);
-    \u0275\u0275advance(5);
-    \u0275\u0275textInterpolate1(" ", course_r2.level);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", course_r2.progressText);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", course_r2.progressBarPercentage !== void 0);
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", course_r2.averageScore);
-    \u0275\u0275advance(2);
-    \u0275\u0275property("disabled", course_r2.isExamCompleted);
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate1(" ", course_r2.isExamCompleted ? "Completed" : course_r2.hasTakenExam ? "Continue Exam" : "Take Mock Exam", " ");
-    \u0275\u0275advance();
-    \u0275\u0275property("ngIf", course_r2.hasTakenExam);
+    \u0275\u0275nextContext();
+    const labelTemplate_r3 = \u0275\u0275reference(1);
+    \u0275\u0275property("ngTemplateOutlet", labelTemplate_r3);
   }
 }
-function HomeComponent_div_2_Template(rf, ctx) {
+function MatFormField_Conditional_12_Template(rf, ctx) {
   if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 3);
-    \u0275\u0275template(1, HomeComponent_div_2_mat_card_1_Template, 19, 10, "mat-card", 4);
+    \u0275\u0275elementStart(0, "div", 14, 4);
+    \u0275\u0275projection(2, 4);
+    \u0275\u0275elementEnd();
+  }
+}
+function MatFormField_Conditional_13_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 15, 5);
+    \u0275\u0275projection(2, 5);
+    \u0275\u0275elementEnd();
+  }
+}
+function MatFormField_Conditional_14_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275element(0, "div", 16);
+  }
+}
+function MatFormField_Case_16_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 18);
+    \u0275\u0275projection(1, 6);
+    \u0275\u0275elementEnd();
+  }
+}
+function MatFormField_Case_17_Conditional_1_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "mat-hint", 22);
+    \u0275\u0275text(1);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
-    const ctx_r2 = \u0275\u0275nextContext();
+    const ctx_r1 = \u0275\u0275nextContext(2);
+    \u0275\u0275property("id", ctx_r1._hintLabelId);
     \u0275\u0275advance();
-    \u0275\u0275property("ngForOf", ctx_r2.allCourses);
+    \u0275\u0275textInterpolate(ctx_r1.hintLabel);
   }
 }
-var HomeComponent = class _HomeComponent {
-  apiService;
-  router;
-  authService;
-  title = signal("Mock Bar App", ...ngDevMode ? [{ debugName: "title" }] : []);
-  loading = true;
-  // Add loading indicator
-  allCourses = [];
-  // Array to hold all courses flattened from categories
-  userDiagAns = [];
-  // To store diag_ans for the logged-in user
-  quizQuestionsCount = {};
-  // To store total questions per course
-  constructor(apiService, router, authService) {
-    this.apiService = apiService;
-    this.router = router;
-    this.authService = authService;
+function MatFormField_Case_17_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 19);
+    \u0275\u0275conditionalCreate(1, MatFormField_Case_17_Conditional_1_Template, 2, 2, "mat-hint", 22);
+    \u0275\u0275projection(2, 7);
+    \u0275\u0275element(3, "div", 23);
+    \u0275\u0275projection(4, 8);
+    \u0275\u0275elementEnd();
   }
-  ngOnInit() {
-    this.fetchAllData();
+  if (rf & 2) {
+    const ctx_r1 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275conditional(ctx_r1.hintLabel ? 1 : -1);
   }
-  fetchAllData() {
-    const userId = this.authService.getUserId();
-    if (!userId) {
-      console.error("User not logged in. Cannot fetch data for courses.");
-      this.loading = false;
-      return;
-    }
-    this.loading = true;
-    forkJoin({
-      categoriesWithCourses: this.apiService.getCategoriesWithCourses(),
-      diagAns: this.apiService.getDiagAnsForUser(),
-      quizCounts: this.apiService.getQuizQuestionsCountPerCourse()
-    }).pipe(
-      // Once initial data is loaded, fetch exam statuses for all courses
-      switchMap((initialResults) => {
-        let tempAllCourses = [];
-        initialResults.categoriesWithCourses.map((category) => {
-          category.courses = category.courses.map((course) => __spreadProps(__spreadValues({}, course), {
-            category_name: category.category_name,
-            thumbnail: course.upcoming_image_thumbnail || "https://topbarassist.com/chanrobles-bar/mock/img/placeholder.jpg"
-          }));
-          tempAllCourses = tempAllCourses.concat(category.courses);
-        });
-        this.allCourses = tempAllCourses;
-        this.userDiagAns = initialResults.diagAns;
-        this.quizQuestionsCount = initialResults.quizCounts.reduce((acc, curr) => {
-          acc[curr.q_course_id] = curr.total_questions;
-          return acc;
-        }, {});
-        const examStatusObservables = this.allCourses.map((course) => this.apiService.getExamStatusForCourse(course.id, userId).pipe(map((status) => ({ courseId: course.id, status }))));
-        return forkJoin(examStatusObservables).pipe(map((examStatuses) => ({ initialResults, examStatuses })));
-      })
-    ).subscribe({
-      next: ({ examStatuses }) => {
-        const examStatusMap = new Map(examStatuses.map((es) => [es.courseId, es.status]));
-        this.allCourses = this.allCourses.map((course) => {
-          const status = examStatusMap.get(course.id);
-          return __spreadProps(__spreadValues({}, course), {
-            isExamCompleted: status?.completed || false,
-            hasTakenExam: (status?.answeredCount || 0) > 0
-            // User has taken exam if answered any questions
-          });
-        });
-        this.processCoursesForMetrics();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error("Error fetching all data:", error);
-        this.loading = false;
-      }
-    });
-  }
-  processCoursesForMetrics() {
-    this.allCourses = this.allCourses.map((course) => {
-      const courseId = course.id;
-      const totalQuestions = this.quizQuestionsCount[courseId] || 0;
-      const userAnswersForCourse = this.userDiagAns.filter(
-        (ans) => ans.batch_id == courseId
-        // Using == for potential type coercion with string/number IDs
-      );
-      const answeredQuestions = userAnswersForCourse.length;
-      let progressText = `${answeredQuestions}/${totalQuestions} questions`;
-      let progressBarPercentage = 0;
-      if (totalQuestions > 0) {
-        progressBarPercentage = answeredQuestions / totalQuestions * 100;
-      }
-      let averageScore = 0;
-      if (answeredQuestions > 0) {
-        const sumScores = userAnswersForCourse.reduce((sum, ans) => sum + ans.score, 0);
-        averageScore = sumScores / answeredQuestions;
-      }
-      return __spreadProps(__spreadValues({}, course), {
-        progressText,
-        progressBarPercentage,
-        averageScore: averageScore.toFixed(2)
-        // Format to 2 decimal places
-      });
-    });
-  }
-  goToExam(courseId) {
-    this.router.navigate(["/exam", courseId]);
-  }
-  goToHistory(courseId) {
-    this.router.navigate(["/history", courseId]);
-  }
-  static \u0275fac = function HomeComponent_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _HomeComponent)(\u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(AuthService));
+}
+var MatLabel = class _MatLabel {
+  static \u0275fac = function MatLabel_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatLabel)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HomeComponent, selectors: [["app-home"]], decls: 3, vars: 2, consts: [["class", "loading-indicator", 4, "ngIf"], ["class", "all-course-cards-container", 4, "ngIf"], [1, "loading-indicator"], [1, "all-course-cards-container"], ["class", "course-card", 4, "ngFor", "ngForOf"], [1, "course-card"], ["alt", "Course Thumbnail", 1, "course-thumbnail-img", 3, "src"], [4, "ngIf"], ["class", "progress-bar-container", 4, "ngIf"], [1, "course-actions"], ["mat-flat-button", "", "color", "primary", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", "class", "history-button", 3, "click", 4, "ngIf"], [1, "progress-bar-container"], [1, "progress-bar"], [1, "progress-percentage"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", 1, "history-button", 3, "click"]], template: function HomeComponent_Template(rf, ctx) {
-    if (rf & 1) {
-      \u0275\u0275elementStart(0, "main");
-      \u0275\u0275template(1, HomeComponent_div_1_Template, 4, 0, "div", 0)(2, HomeComponent_div_2_Template, 2, 1, "div", 1);
-      \u0275\u0275elementEnd();
-    }
-    if (rf & 2) {
-      \u0275\u0275advance();
-      \u0275\u0275property("ngIf", ctx.loading);
-      \u0275\u0275advance();
-      \u0275\u0275property("ngIf", !ctx.loading);
-    }
-  }, dependencies: [CommonModule, NgForOf, NgIf, MatButtonModule, MatButton, MatIconModule, MatIcon, MatCardModule, MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardSubtitle, MatCardTitle, MatProgressSpinnerModule, MatProgressSpinner, DecimalPipe], styles: ["\n\n.loading-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.all-course-cards-container[_ngcontent-%COMP%] {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n  justify-content: center;\n  align-items: stretch;\n  padding: 20px;\n}\n.course-card[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  overflow: hidden;\n  flex-basis: 300px;\n  max-width: 350px;\n}\n.course-card[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n  height: 200px;\n  object-fit: cover;\n  width: 100%;\n}\n.course-card[_ngcontent-%COMP%]   mat-card-header[_ngcontent-%COMP%] {\n  padding-bottom: 0;\n}\n.course-card[_ngcontent-%COMP%]   mat-card-title[_ngcontent-%COMP%] {\n  font-size: 1em;\n  font-weight: bold;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.course-card[_ngcontent-%COMP%]   mat-card-subtitle[_ngcontent-%COMP%] {\n  font-size: 0.8em;\n  color: #757575;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  min-height: 2.8em;\n  line-height: 1.4em;\n}\n.course-card[_ngcontent-%COMP%]   mat-card-content[_ngcontent-%COMP%] {\n  flex-grow: 1;\n  padding-top: 10px;\n}\n.course-card[_ngcontent-%COMP%]   mat-card-actions[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  padding: 16px;\n  min-height: 60px;\n}\n.course-actions[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  width: 100%;\n  gap: 8px;\n}\n.course-actions[_ngcontent-%COMP%]   button[_ngcontent-%COMP%] {\n  font-size: 0.85rem;\n  line-height: 1.2;\n}\n.history-button[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n}\n.history-button[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.progress-bar-container[_ngcontent-%COMP%] {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar[_ngcontent-%COMP%] {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage[_ngcontent-%COMP%] {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.no-courses[_ngcontent-%COMP%] {\n  text-align: center;\n  grid-column: 1 / -1;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\nfooter[_ngcontent-%COMP%] {\n  text-align: center;\n  padding: 20px;\n  margin-top: 40px;\n  background-color: #f0f0f0;\n  color: #666;\n  border-top: 1px solid #e0e0e0;\n}\n/*# sourceMappingURL=home.component.css.map */"] });
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatLabel,
+    selectors: [["mat-label"]]
+  });
 };
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(HomeComponent, [{
-    type: Component,
-    args: [{ selector: "app-home", standalone: true, imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule], template: `<main>
-  <div *ngIf="loading" class="loading-indicator">
-    <mat-spinner></mat-spinner>
-    <p>Loading courses...</p>
-  </div>
-
-  <div *ngIf="!loading" class="all-course-cards-container">
-    <mat-card *ngFor="let course of allCourses" class="course-card">
-      <img [src]="course.thumbnail" alt="Course Thumbnail" class="course-thumbnail-img">
-      <mat-card-header>
-        <mat-card-title>{{ course.title }}</mat-card-title>
-        <mat-card-subtitle>{{ course.short_description }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p><strong>Level:</strong> {{ course.level }}</p>
-        <p *ngIf="course.progressText"><strong>Progress:</strong> {{ course.progressText }}</p>
-        <div *ngIf="course.progressBarPercentage !== undefined" class="progress-bar-container">
-          <div class="progress-bar" [style.width.%]="course.progressBarPercentage"></div>
-          <span class="progress-percentage">{{ course.progressBarPercentage | number:'1.0-0' }}%</span>
-        </div>
-        <p *ngIf="course.averageScore"><strong>Average Score:</strong> {{ course.averageScore }}%</p>
-      </mat-card-content>
-      <mat-card-actions class="course-actions">
-        <button
-          mat-flat-button
-          color="primary"
-          (click)="goToExam(course.id)"
-          [disabled]="course.isExamCompleted"
-        >
-          {{ course.isExamCompleted ? 'Completed' : (course.hasTakenExam ? 'Continue Exam' : 'Take Mock Exam') }}
-        </button>
-        <button
-          *ngIf="course.hasTakenExam"
-          mat-stroked-button
-          color="accent"
-          (click)="goToHistory(course.id)"
-          aria-label="View exam history"
-          class="history-button"
-        >
-          <mat-icon>history</mat-icon>
-          <span>History</span>
-        </button>
-      </mat-card-actions>
-    </mat-card>
-    <!-- We might need a message if allCourses is empty, but for now, omitting the no-courses message -->
-  </div>
-</main>`, styles: ["/* src/app/home/home.component.css */\n.loading-indicator {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.all-course-cards-container {\n  display: flex;\n  flex-wrap: wrap;\n  gap: 20px;\n  justify-content: center;\n  align-items: stretch;\n  padding: 20px;\n}\n.course-card {\n  display: flex;\n  flex-direction: column;\n  height: 100%;\n  overflow: hidden;\n  flex-basis: 300px;\n  max-width: 350px;\n}\n.course-card .course-thumbnail-img {\n  height: 200px;\n  object-fit: cover;\n  width: 100%;\n}\n.course-card mat-card-header {\n  padding-bottom: 0;\n}\n.course-card mat-card-title {\n  font-size: 1em;\n  font-weight: bold;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n.course-card mat-card-subtitle {\n  font-size: 0.8em;\n  color: #757575;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  min-height: 2.8em;\n  line-height: 1.4em;\n}\n.course-card mat-card-content {\n  flex-grow: 1;\n  padding-top: 10px;\n}\n.course-card mat-card-actions {\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  padding: 16px;\n  min-height: 60px;\n}\n.course-actions {\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  width: 100%;\n  gap: 8px;\n}\n.course-actions button {\n  font-size: 0.85rem;\n  line-height: 1.2;\n}\n.history-button {\n  display: flex;\n  align-items: center;\n}\n.history-button mat-icon {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.progress-bar-container {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.no-courses {\n  text-align: center;\n  grid-column: 1 / -1;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\nfooter {\n  text-align: center;\n  padding: 20px;\n  margin-top: 40px;\n  background-color: #f0f0f0;\n  color: #666;\n  border-top: 1px solid #e0e0e0;\n}\n/*# sourceMappingURL=home.component.css.map */\n"] }]
-  }], () => [{ type: ApiService }, { type: Router }, { type: AuthService }], null);
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatLabel, [{
+    type: Directive,
+    args: [{
+      selector: "mat-label"
+    }]
+  }], null, null);
 })();
+var MAT_ERROR = new InjectionToken("MatError");
+var MatError = class _MatError {
+  id = inject2(_IdGenerator).getId("mat-mdc-error-");
+  constructor() {
+  }
+  static \u0275fac = function MatError_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatError)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatError,
+    selectors: [["mat-error"], ["", "matError", ""]],
+    hostAttrs: [1, "mat-mdc-form-field-error", "mat-mdc-form-field-bottom-align"],
+    hostVars: 1,
+    hostBindings: function MatError_HostBindings(rf, ctx) {
+      if (rf & 2) {
+        \u0275\u0275domProperty("id", ctx.id);
+      }
+    },
+    inputs: {
+      id: "id"
+    },
+    features: [\u0275\u0275ProvidersFeature([{
+      provide: MAT_ERROR,
+      useExisting: _MatError
+    }])]
+  });
+};
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(HomeComponent, { className: "HomeComponent", filePath: "src/app/home/home.component.ts", lineNumber: 26 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatError, [{
+    type: Directive,
+    args: [{
+      selector: "mat-error, [matError]",
+      host: {
+        "class": "mat-mdc-form-field-error mat-mdc-form-field-bottom-align",
+        "[id]": "id"
+      },
+      providers: [{
+        provide: MAT_ERROR,
+        useExisting: MatError
+      }]
+    }]
+  }], () => [], {
+    id: [{
+      type: Input
+    }]
+  });
+})();
+var MatHint = class _MatHint {
+  align = "start";
+  id = inject2(_IdGenerator).getId("mat-mdc-hint-");
+  static \u0275fac = function MatHint_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatHint)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatHint,
+    selectors: [["mat-hint"]],
+    hostAttrs: [1, "mat-mdc-form-field-hint", "mat-mdc-form-field-bottom-align"],
+    hostVars: 4,
+    hostBindings: function MatHint_HostBindings(rf, ctx) {
+      if (rf & 2) {
+        \u0275\u0275domProperty("id", ctx.id);
+        \u0275\u0275attribute("align", null);
+        \u0275\u0275classProp("mat-mdc-form-field-hint-end", ctx.align === "end");
+      }
+    },
+    inputs: {
+      align: "align",
+      id: "id"
+    }
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatHint, [{
+    type: Directive,
+    args: [{
+      selector: "mat-hint",
+      host: {
+        "class": "mat-mdc-form-field-hint mat-mdc-form-field-bottom-align",
+        "[class.mat-mdc-form-field-hint-end]": 'align === "end"',
+        "[id]": "id",
+        "[attr.align]": "null"
+      }
+    }]
+  }], null, {
+    align: [{
+      type: Input
+    }],
+    id: [{
+      type: Input
+    }]
+  });
+})();
+var MAT_PREFIX = new InjectionToken("MatPrefix");
+var MatPrefix = class _MatPrefix {
+  set _isTextSelector(value) {
+    this._isText = true;
+  }
+  _isText = false;
+  static \u0275fac = function MatPrefix_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatPrefix)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatPrefix,
+    selectors: [["", "matPrefix", ""], ["", "matIconPrefix", ""], ["", "matTextPrefix", ""]],
+    inputs: {
+      _isTextSelector: [0, "matTextPrefix", "_isTextSelector"]
+    },
+    features: [\u0275\u0275ProvidersFeature([{
+      provide: MAT_PREFIX,
+      useExisting: _MatPrefix
+    }])]
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatPrefix, [{
+    type: Directive,
+    args: [{
+      selector: "[matPrefix], [matIconPrefix], [matTextPrefix]",
+      providers: [{
+        provide: MAT_PREFIX,
+        useExisting: MatPrefix
+      }]
+    }]
+  }], null, {
+    _isTextSelector: [{
+      type: Input,
+      args: ["matTextPrefix"]
+    }]
+  });
+})();
+var MAT_SUFFIX = new InjectionToken("MatSuffix");
+var MatSuffix = class _MatSuffix {
+  set _isTextSelector(value) {
+    this._isText = true;
+  }
+  _isText = false;
+  static \u0275fac = function MatSuffix_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatSuffix)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatSuffix,
+    selectors: [["", "matSuffix", ""], ["", "matIconSuffix", ""], ["", "matTextSuffix", ""]],
+    inputs: {
+      _isTextSelector: [0, "matTextSuffix", "_isTextSelector"]
+    },
+    features: [\u0275\u0275ProvidersFeature([{
+      provide: MAT_SUFFIX,
+      useExisting: _MatSuffix
+    }])]
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatSuffix, [{
+    type: Directive,
+    args: [{
+      selector: "[matSuffix], [matIconSuffix], [matTextSuffix]",
+      providers: [{
+        provide: MAT_SUFFIX,
+        useExisting: MatSuffix
+      }]
+    }]
+  }], null, {
+    _isTextSelector: [{
+      type: Input,
+      args: ["matTextSuffix"]
+    }]
+  });
+})();
+var FLOATING_LABEL_PARENT = new InjectionToken("FloatingLabelParent");
+var MatFormFieldFloatingLabel = class _MatFormFieldFloatingLabel {
+  _elementRef = inject2(ElementRef);
+  get floating() {
+    return this._floating;
+  }
+  set floating(value) {
+    this._floating = value;
+    if (this.monitorResize) {
+      this._handleResize();
+    }
+  }
+  _floating = false;
+  get monitorResize() {
+    return this._monitorResize;
+  }
+  set monitorResize(value) {
+    this._monitorResize = value;
+    if (this._monitorResize) {
+      this._subscribeToResize();
+    } else {
+      this._resizeSubscription.unsubscribe();
+    }
+  }
+  _monitorResize = false;
+  _resizeObserver = inject2(SharedResizeObserver);
+  _ngZone = inject2(NgZone);
+  _parent = inject2(FLOATING_LABEL_PARENT);
+  _resizeSubscription = new Subscription();
+  constructor() {
+  }
+  ngOnDestroy() {
+    this._resizeSubscription.unsubscribe();
+  }
+  getWidth() {
+    return estimateScrollWidth(this._elementRef.nativeElement);
+  }
+  get element() {
+    return this._elementRef.nativeElement;
+  }
+  _handleResize() {
+    setTimeout(() => this._parent._handleLabelResized());
+  }
+  _subscribeToResize() {
+    this._resizeSubscription.unsubscribe();
+    this._ngZone.runOutsideAngular(() => {
+      this._resizeSubscription = this._resizeObserver.observe(this._elementRef.nativeElement, {
+        box: "border-box"
+      }).subscribe(() => this._handleResize());
+    });
+  }
+  static \u0275fac = function MatFormFieldFloatingLabel_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormFieldFloatingLabel)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatFormFieldFloatingLabel,
+    selectors: [["label", "matFormFieldFloatingLabel", ""]],
+    hostAttrs: [1, "mdc-floating-label", "mat-mdc-floating-label"],
+    hostVars: 2,
+    hostBindings: function MatFormFieldFloatingLabel_HostBindings(rf, ctx) {
+      if (rf & 2) {
+        \u0275\u0275classProp("mdc-floating-label--float-above", ctx.floating);
+      }
+    },
+    inputs: {
+      floating: "floating",
+      monitorResize: "monitorResize"
+    }
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldFloatingLabel, [{
+    type: Directive,
+    args: [{
+      selector: "label[matFormFieldFloatingLabel]",
+      host: {
+        "class": "mdc-floating-label mat-mdc-floating-label",
+        "[class.mdc-floating-label--float-above]": "floating"
+      }
+    }]
+  }], () => [], {
+    floating: [{
+      type: Input
+    }],
+    monitorResize: [{
+      type: Input
+    }]
+  });
+})();
+function estimateScrollWidth(element) {
+  const htmlEl = element;
+  if (htmlEl.offsetParent !== null) {
+    return htmlEl.scrollWidth;
+  }
+  const clone = htmlEl.cloneNode(true);
+  clone.style.setProperty("position", "absolute");
+  clone.style.setProperty("transform", "translate(-9999px, -9999px)");
+  document.documentElement.appendChild(clone);
+  const scrollWidth = clone.scrollWidth;
+  clone.remove();
+  return scrollWidth;
+}
+var ACTIVATE_CLASS = "mdc-line-ripple--active";
+var DEACTIVATING_CLASS = "mdc-line-ripple--deactivating";
+var MatFormFieldLineRipple = class _MatFormFieldLineRipple {
+  _elementRef = inject2(ElementRef);
+  _cleanupTransitionEnd;
+  constructor() {
+    const ngZone = inject2(NgZone);
+    const renderer = inject2(Renderer2);
+    ngZone.runOutsideAngular(() => {
+      this._cleanupTransitionEnd = renderer.listen(this._elementRef.nativeElement, "transitionend", this._handleTransitionEnd);
+    });
+  }
+  activate() {
+    const classList = this._elementRef.nativeElement.classList;
+    classList.remove(DEACTIVATING_CLASS);
+    classList.add(ACTIVATE_CLASS);
+  }
+  deactivate() {
+    this._elementRef.nativeElement.classList.add(DEACTIVATING_CLASS);
+  }
+  _handleTransitionEnd = (event) => {
+    const classList = this._elementRef.nativeElement.classList;
+    const isDeactivating = classList.contains(DEACTIVATING_CLASS);
+    if (event.propertyName === "opacity" && isDeactivating) {
+      classList.remove(ACTIVATE_CLASS, DEACTIVATING_CLASS);
+    }
+  };
+  ngOnDestroy() {
+    this._cleanupTransitionEnd();
+  }
+  static \u0275fac = function MatFormFieldLineRipple_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormFieldLineRipple)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatFormFieldLineRipple,
+    selectors: [["div", "matFormFieldLineRipple", ""]],
+    hostAttrs: [1, "mdc-line-ripple"]
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldLineRipple, [{
+    type: Directive,
+    args: [{
+      selector: "div[matFormFieldLineRipple]",
+      host: {
+        "class": "mdc-line-ripple"
+      }
+    }]
+  }], () => [], null);
+})();
+var MatFormFieldNotchedOutline = class _MatFormFieldNotchedOutline {
+  _elementRef = inject2(ElementRef);
+  _ngZone = inject2(NgZone);
+  open = false;
+  _notch;
+  ngAfterViewInit() {
+    const element = this._elementRef.nativeElement;
+    const label = element.querySelector(".mdc-floating-label");
+    if (label) {
+      element.classList.add("mdc-notched-outline--upgraded");
+      if (typeof requestAnimationFrame === "function") {
+        label.style.transitionDuration = "0s";
+        this._ngZone.runOutsideAngular(() => {
+          requestAnimationFrame(() => label.style.transitionDuration = "");
+        });
+      }
+    } else {
+      element.classList.add("mdc-notched-outline--no-label");
+    }
+  }
+  _setNotchWidth(labelWidth) {
+    const notch = this._notch.nativeElement;
+    if (!this.open || !labelWidth) {
+      notch.style.width = "";
+    } else {
+      const NOTCH_ELEMENT_PADDING = 8;
+      const NOTCH_ELEMENT_BORDER = 1;
+      notch.style.width = `calc(${labelWidth}px * var(--mat-mdc-form-field-floating-label-scale, 0.75) + ${NOTCH_ELEMENT_PADDING + NOTCH_ELEMENT_BORDER}px)`;
+    }
+  }
+  _setMaxWidth(prefixAndSuffixWidth) {
+    this._notch.nativeElement.style.setProperty("--mat-form-field-notch-max-width", `calc(100% - ${prefixAndSuffixWidth}px)`);
+  }
+  static \u0275fac = function MatFormFieldNotchedOutline_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormFieldNotchedOutline)();
+  };
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
+    type: _MatFormFieldNotchedOutline,
+    selectors: [["div", "matFormFieldNotchedOutline", ""]],
+    viewQuery: function MatFormFieldNotchedOutline_Query(rf, ctx) {
+      if (rf & 1) {
+        \u0275\u0275viewQuery(_c06, 5);
+      }
+      if (rf & 2) {
+        let _t;
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._notch = _t.first);
+      }
+    },
+    hostAttrs: [1, "mdc-notched-outline"],
+    hostVars: 2,
+    hostBindings: function MatFormFieldNotchedOutline_HostBindings(rf, ctx) {
+      if (rf & 2) {
+        \u0275\u0275classProp("mdc-notched-outline--notched", ctx.open);
+      }
+    },
+    inputs: {
+      open: [0, "matFormFieldNotchedOutlineOpen", "open"]
+    },
+    attrs: _c14,
+    ngContentSelectors: _c23,
+    decls: 5,
+    vars: 0,
+    consts: [["notch", ""], [1, "mat-mdc-notch-piece", "mdc-notched-outline__leading"], [1, "mat-mdc-notch-piece", "mdc-notched-outline__notch"], [1, "mat-mdc-notch-piece", "mdc-notched-outline__trailing"]],
+    template: function MatFormFieldNotchedOutline_Template(rf, ctx) {
+      if (rf & 1) {
+        \u0275\u0275projectionDef();
+        \u0275\u0275domElement(0, "div", 1);
+        \u0275\u0275domElementStart(1, "div", 2, 0);
+        \u0275\u0275projection(3);
+        \u0275\u0275domElementEnd();
+        \u0275\u0275domElement(4, "div", 3);
+      }
+    },
+    encapsulation: 2,
+    changeDetection: 0
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldNotchedOutline, [{
+    type: Component,
+    args: [{
+      selector: "div[matFormFieldNotchedOutline]",
+      host: {
+        "class": "mdc-notched-outline",
+        "[class.mdc-notched-outline--notched]": "open"
+      },
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      encapsulation: ViewEncapsulation.None,
+      template: '<div class="mat-mdc-notch-piece mdc-notched-outline__leading"></div>\n<div class="mat-mdc-notch-piece mdc-notched-outline__notch" #notch>\n  <ng-content></ng-content>\n</div>\n<div class="mat-mdc-notch-piece mdc-notched-outline__trailing"></div>\n'
+    }]
+  }], null, {
+    open: [{
+      type: Input,
+      args: ["matFormFieldNotchedOutlineOpen"]
+    }],
+    _notch: [{
+      type: ViewChild,
+      args: ["notch"]
+    }]
+  });
+})();
+var MatFormFieldControl = class _MatFormFieldControl {
+  value;
+  stateChanges;
+  id;
+  placeholder;
+  ngControl;
+  focused;
+  empty;
+  shouldLabelFloat;
+  required;
+  disabled;
+  errorState;
+  controlType;
+  autofilled;
+  userAriaDescribedBy;
+  disableAutomaticLabeling;
+  describedByIds;
+  static \u0275fac = function MatFormFieldControl_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormFieldControl)();
+  };
+  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
+    type: _MatFormFieldControl
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldControl, [{
+    type: Directive
+  }], null, null);
+})();
+function getMatFormFieldDuplicatedHintError(align) {
+  return Error(`A hint was already declared for 'align="${align}"'.`);
+}
+function getMatFormFieldMissingControlError() {
+  return Error("mat-form-field must contain a MatFormFieldControl.");
+}
+var MAT_FORM_FIELD = new InjectionToken("MatFormField");
+var MAT_FORM_FIELD_DEFAULT_OPTIONS = new InjectionToken("MAT_FORM_FIELD_DEFAULT_OPTIONS");
+var DEFAULT_APPEARANCE = "fill";
+var DEFAULT_FLOAT_LABEL = "auto";
+var DEFAULT_SUBSCRIPT_SIZING = "fixed";
+var FLOATING_LABEL_DEFAULT_DOCKED_TRANSFORM = `translateY(-50%)`;
+var MatFormField = class _MatFormField {
+  _elementRef = inject2(ElementRef);
+  _changeDetectorRef = inject2(ChangeDetectorRef);
+  _platform = inject2(Platform);
+  _idGenerator = inject2(_IdGenerator);
+  _ngZone = inject2(NgZone);
+  _defaults = inject2(MAT_FORM_FIELD_DEFAULT_OPTIONS, {
+    optional: true
+  });
+  _currentDirection;
+  _textField;
+  _iconPrefixContainer;
+  _textPrefixContainer;
+  _iconSuffixContainer;
+  _textSuffixContainer;
+  _floatingLabel;
+  _notchedOutline;
+  _lineRipple;
+  _iconPrefixContainerSignal = viewChild("iconPrefixContainer", ...ngDevMode ? [{
+    debugName: "_iconPrefixContainerSignal"
+  }] : []);
+  _textPrefixContainerSignal = viewChild("textPrefixContainer", ...ngDevMode ? [{
+    debugName: "_textPrefixContainerSignal"
+  }] : []);
+  _iconSuffixContainerSignal = viewChild("iconSuffixContainer", ...ngDevMode ? [{
+    debugName: "_iconSuffixContainerSignal"
+  }] : []);
+  _textSuffixContainerSignal = viewChild("textSuffixContainer", ...ngDevMode ? [{
+    debugName: "_textSuffixContainerSignal"
+  }] : []);
+  _prefixSuffixContainers = computed(() => {
+    return [this._iconPrefixContainerSignal(), this._textPrefixContainerSignal(), this._iconSuffixContainerSignal(), this._textSuffixContainerSignal()].map((container) => container?.nativeElement).filter((e) => e !== void 0);
+  }, ...ngDevMode ? [{
+    debugName: "_prefixSuffixContainers"
+  }] : []);
+  _formFieldControl;
+  _prefixChildren;
+  _suffixChildren;
+  _errorChildren;
+  _hintChildren;
+  _labelChild = contentChild(MatLabel, ...ngDevMode ? [{
+    debugName: "_labelChild"
+  }] : []);
+  get hideRequiredMarker() {
+    return this._hideRequiredMarker;
+  }
+  set hideRequiredMarker(value) {
+    this._hideRequiredMarker = coerceBooleanProperty(value);
+  }
+  _hideRequiredMarker = false;
+  color = "primary";
+  get floatLabel() {
+    return this._floatLabel || this._defaults?.floatLabel || DEFAULT_FLOAT_LABEL;
+  }
+  set floatLabel(value) {
+    if (value !== this._floatLabel) {
+      this._floatLabel = value;
+      this._changeDetectorRef.markForCheck();
+    }
+  }
+  _floatLabel;
+  get appearance() {
+    return this._appearanceSignal();
+  }
+  set appearance(value) {
+    const newAppearance = value || this._defaults?.appearance || DEFAULT_APPEARANCE;
+    if (typeof ngDevMode === "undefined" || ngDevMode) {
+      if (newAppearance !== "fill" && newAppearance !== "outline") {
+        throw new Error(`MatFormField: Invalid appearance "${newAppearance}", valid values are "fill" or "outline".`);
+      }
+    }
+    this._appearanceSignal.set(newAppearance);
+  }
+  _appearanceSignal = signal(DEFAULT_APPEARANCE, ...ngDevMode ? [{
+    debugName: "_appearanceSignal"
+  }] : []);
+  get subscriptSizing() {
+    return this._subscriptSizing || this._defaults?.subscriptSizing || DEFAULT_SUBSCRIPT_SIZING;
+  }
+  set subscriptSizing(value) {
+    this._subscriptSizing = value || this._defaults?.subscriptSizing || DEFAULT_SUBSCRIPT_SIZING;
+  }
+  _subscriptSizing = null;
+  get hintLabel() {
+    return this._hintLabel;
+  }
+  set hintLabel(value) {
+    this._hintLabel = value;
+    this._processHints();
+  }
+  _hintLabel = "";
+  _hasIconPrefix = false;
+  _hasTextPrefix = false;
+  _hasIconSuffix = false;
+  _hasTextSuffix = false;
+  _labelId = this._idGenerator.getId("mat-mdc-form-field-label-");
+  _hintLabelId = this._idGenerator.getId("mat-mdc-hint-");
+  _describedByIds;
+  get _control() {
+    return this._explicitFormFieldControl || this._formFieldControl;
+  }
+  set _control(value) {
+    this._explicitFormFieldControl = value;
+  }
+  _destroyed = new Subject();
+  _isFocused = null;
+  _explicitFormFieldControl;
+  _previousControl = null;
+  _previousControlValidatorFn = null;
+  _stateChanges;
+  _valueChanges;
+  _describedByChanges;
+  _outlineLabelOffsetResizeObserver = null;
+  _animationsDisabled = _animationsDisabled();
+  constructor() {
+    const defaults2 = this._defaults;
+    const dir = inject2(Directionality);
+    if (defaults2) {
+      if (defaults2.appearance) {
+        this.appearance = defaults2.appearance;
+      }
+      this._hideRequiredMarker = Boolean(defaults2?.hideRequiredMarker);
+      if (defaults2.color) {
+        this.color = defaults2.color;
+      }
+    }
+    effect(() => this._currentDirection = dir.valueSignal());
+    this._syncOutlineLabelOffset();
+  }
+  ngAfterViewInit() {
+    this._updateFocusState();
+    if (!this._animationsDisabled) {
+      this._ngZone.runOutsideAngular(() => {
+        setTimeout(() => {
+          this._elementRef.nativeElement.classList.add("mat-form-field-animations-enabled");
+        }, 300);
+      });
+    }
+    this._changeDetectorRef.detectChanges();
+  }
+  ngAfterContentInit() {
+    this._assertFormFieldControl();
+    this._initializeSubscript();
+    this._initializePrefixAndSuffix();
+  }
+  ngAfterContentChecked() {
+    this._assertFormFieldControl();
+    if (this._control !== this._previousControl) {
+      this._initializeControl(this._previousControl);
+      if (this._control.ngControl && this._control.ngControl.control) {
+        this._previousControlValidatorFn = this._control.ngControl.control.validator;
+      }
+      this._previousControl = this._control;
+    }
+    if (this._control.ngControl && this._control.ngControl.control) {
+      const validatorFn = this._control.ngControl.control.validator;
+      if (validatorFn !== this._previousControlValidatorFn) {
+        this._changeDetectorRef.markForCheck();
+      }
+    }
+  }
+  ngOnDestroy() {
+    this._outlineLabelOffsetResizeObserver?.disconnect();
+    this._stateChanges?.unsubscribe();
+    this._valueChanges?.unsubscribe();
+    this._describedByChanges?.unsubscribe();
+    this._destroyed.next();
+    this._destroyed.complete();
+  }
+  getLabelId = computed(() => this._hasFloatingLabel() ? this._labelId : null, ...ngDevMode ? [{
+    debugName: "getLabelId"
+  }] : []);
+  getConnectedOverlayOrigin() {
+    return this._textField || this._elementRef;
+  }
+  _animateAndLockLabel() {
+    if (this._hasFloatingLabel()) {
+      this.floatLabel = "always";
+    }
+  }
+  _initializeControl(previousControl) {
+    const control = this._control;
+    const classPrefix = "mat-mdc-form-field-type-";
+    if (previousControl) {
+      this._elementRef.nativeElement.classList.remove(classPrefix + previousControl.controlType);
+    }
+    if (control.controlType) {
+      this._elementRef.nativeElement.classList.add(classPrefix + control.controlType);
+    }
+    this._stateChanges?.unsubscribe();
+    this._stateChanges = control.stateChanges.subscribe(() => {
+      this._updateFocusState();
+      this._changeDetectorRef.markForCheck();
+    });
+    this._describedByChanges?.unsubscribe();
+    this._describedByChanges = control.stateChanges.pipe(startWith([void 0, void 0]), map(() => [control.errorState, control.userAriaDescribedBy]), pairwise(), filter(([[prevErrorState, prevDescribedBy], [currentErrorState, currentDescribedBy]]) => {
+      return prevErrorState !== currentErrorState || prevDescribedBy !== currentDescribedBy;
+    })).subscribe(() => this._syncDescribedByIds());
+    this._valueChanges?.unsubscribe();
+    if (control.ngControl && control.ngControl.valueChanges) {
+      this._valueChanges = control.ngControl.valueChanges.pipe(takeUntil(this._destroyed)).subscribe(() => this._changeDetectorRef.markForCheck());
+    }
+  }
+  _checkPrefixAndSuffixTypes() {
+    this._hasIconPrefix = !!this._prefixChildren.find((p) => !p._isText);
+    this._hasTextPrefix = !!this._prefixChildren.find((p) => p._isText);
+    this._hasIconSuffix = !!this._suffixChildren.find((s) => !s._isText);
+    this._hasTextSuffix = !!this._suffixChildren.find((s) => s._isText);
+  }
+  _initializePrefixAndSuffix() {
+    this._checkPrefixAndSuffixTypes();
+    merge(this._prefixChildren.changes, this._suffixChildren.changes).subscribe(() => {
+      this._checkPrefixAndSuffixTypes();
+      this._changeDetectorRef.markForCheck();
+    });
+  }
+  _initializeSubscript() {
+    this._hintChildren.changes.subscribe(() => {
+      this._processHints();
+      this._changeDetectorRef.markForCheck();
+    });
+    this._errorChildren.changes.subscribe(() => {
+      this._syncDescribedByIds();
+      this._changeDetectorRef.markForCheck();
+    });
+    this._validateHints();
+    this._syncDescribedByIds();
+  }
+  _assertFormFieldControl() {
+    if (!this._control && (typeof ngDevMode === "undefined" || ngDevMode)) {
+      throw getMatFormFieldMissingControlError();
+    }
+  }
+  _updateFocusState() {
+    const controlFocused = this._control.focused;
+    if (controlFocused && !this._isFocused) {
+      this._isFocused = true;
+      this._lineRipple?.activate();
+    } else if (!controlFocused && (this._isFocused || this._isFocused === null)) {
+      this._isFocused = false;
+      this._lineRipple?.deactivate();
+    }
+    this._elementRef.nativeElement.classList.toggle("mat-focused", controlFocused);
+    this._textField?.nativeElement.classList.toggle("mdc-text-field--focused", controlFocused);
+  }
+  _syncOutlineLabelOffset() {
+    afterRenderEffect({
+      earlyRead: () => {
+        if (this._appearanceSignal() !== "outline") {
+          this._outlineLabelOffsetResizeObserver?.disconnect();
+          return null;
+        }
+        if (globalThis.ResizeObserver) {
+          this._outlineLabelOffsetResizeObserver ||= new globalThis.ResizeObserver(() => {
+            this._writeOutlinedLabelStyles(this._getOutlinedLabelOffset());
+          });
+          for (const el of this._prefixSuffixContainers()) {
+            this._outlineLabelOffsetResizeObserver.observe(el, {
+              box: "border-box"
+            });
+          }
+        }
+        return this._getOutlinedLabelOffset();
+      },
+      write: (labelStyles) => this._writeOutlinedLabelStyles(labelStyles())
+    });
+  }
+  _shouldAlwaysFloat() {
+    return this.floatLabel === "always";
+  }
+  _hasOutline() {
+    return this.appearance === "outline";
+  }
+  _forceDisplayInfixLabel() {
+    return !this._platform.isBrowser && this._prefixChildren.length && !this._shouldLabelFloat();
+  }
+  _hasFloatingLabel = computed(() => !!this._labelChild(), ...ngDevMode ? [{
+    debugName: "_hasFloatingLabel"
+  }] : []);
+  _shouldLabelFloat() {
+    if (!this._hasFloatingLabel()) {
+      return false;
+    }
+    return this._control.shouldLabelFloat || this._shouldAlwaysFloat();
+  }
+  _shouldForward(prop) {
+    const control = this._control ? this._control.ngControl : null;
+    return control && control[prop];
+  }
+  _getSubscriptMessageType() {
+    return this._errorChildren && this._errorChildren.length > 0 && this._control.errorState ? "error" : "hint";
+  }
+  _handleLabelResized() {
+    this._refreshOutlineNotchWidth();
+  }
+  _refreshOutlineNotchWidth() {
+    if (!this._hasOutline() || !this._floatingLabel || !this._shouldLabelFloat()) {
+      this._notchedOutline?._setNotchWidth(0);
+    } else {
+      this._notchedOutline?._setNotchWidth(this._floatingLabel.getWidth());
+    }
+  }
+  _processHints() {
+    this._validateHints();
+    this._syncDescribedByIds();
+  }
+  _validateHints() {
+    if (this._hintChildren && (typeof ngDevMode === "undefined" || ngDevMode)) {
+      let startHint;
+      let endHint;
+      this._hintChildren.forEach((hint) => {
+        if (hint.align === "start") {
+          if (startHint || this.hintLabel) {
+            throw getMatFormFieldDuplicatedHintError("start");
+          }
+          startHint = hint;
+        } else if (hint.align === "end") {
+          if (endHint) {
+            throw getMatFormFieldDuplicatedHintError("end");
+          }
+          endHint = hint;
+        }
+      });
+    }
+  }
+  _syncDescribedByIds() {
+    if (this._control) {
+      let ids = [];
+      if (this._control.userAriaDescribedBy && typeof this._control.userAriaDescribedBy === "string") {
+        ids.push(...this._control.userAriaDescribedBy.split(" "));
+      }
+      if (this._getSubscriptMessageType() === "hint") {
+        const startHint = this._hintChildren ? this._hintChildren.find((hint) => hint.align === "start") : null;
+        const endHint = this._hintChildren ? this._hintChildren.find((hint) => hint.align === "end") : null;
+        if (startHint) {
+          ids.push(startHint.id);
+        } else if (this._hintLabel) {
+          ids.push(this._hintLabelId);
+        }
+        if (endHint) {
+          ids.push(endHint.id);
+        }
+      } else if (this._errorChildren) {
+        ids.push(...this._errorChildren.map((error) => error.id));
+      }
+      const existingDescribedBy = this._control.describedByIds;
+      let toAssign;
+      if (existingDescribedBy) {
+        const exclude = this._describedByIds || ids;
+        toAssign = ids.concat(existingDescribedBy.filter((id) => id && !exclude.includes(id)));
+      } else {
+        toAssign = ids;
+      }
+      this._control.setDescribedByIds(toAssign);
+      this._describedByIds = ids;
+    }
+  }
+  _getOutlinedLabelOffset() {
+    if (!this._hasOutline() || !this._floatingLabel) {
+      return null;
+    }
+    if (!this._iconPrefixContainer && !this._textPrefixContainer) {
+      return ["", null];
+    }
+    if (!this._isAttachedToDom()) {
+      return null;
+    }
+    const iconPrefixContainer = this._iconPrefixContainer?.nativeElement;
+    const textPrefixContainer = this._textPrefixContainer?.nativeElement;
+    const iconSuffixContainer = this._iconSuffixContainer?.nativeElement;
+    const textSuffixContainer = this._textSuffixContainer?.nativeElement;
+    const iconPrefixContainerWidth = iconPrefixContainer?.getBoundingClientRect().width ?? 0;
+    const textPrefixContainerWidth = textPrefixContainer?.getBoundingClientRect().width ?? 0;
+    const iconSuffixContainerWidth = iconSuffixContainer?.getBoundingClientRect().width ?? 0;
+    const textSuffixContainerWidth = textSuffixContainer?.getBoundingClientRect().width ?? 0;
+    const negate = this._currentDirection === "rtl" ? "-1" : "1";
+    const prefixWidth = `${iconPrefixContainerWidth + textPrefixContainerWidth}px`;
+    const labelOffset = `var(--mat-mdc-form-field-label-offset-x, 0px)`;
+    const labelHorizontalOffset = `calc(${negate} * (${prefixWidth} + ${labelOffset}))`;
+    const floatingLabelTransform = `var(--mat-mdc-form-field-label-transform, ${FLOATING_LABEL_DEFAULT_DOCKED_TRANSFORM} translateX(${labelHorizontalOffset}))`;
+    const notchedOutlineWidth = iconPrefixContainerWidth + textPrefixContainerWidth + iconSuffixContainerWidth + textSuffixContainerWidth;
+    return [floatingLabelTransform, notchedOutlineWidth];
+  }
+  _writeOutlinedLabelStyles(styles) {
+    if (styles !== null) {
+      const [floatingLabelTransform, notchedOutlineWidth] = styles;
+      if (this._floatingLabel) {
+        this._floatingLabel.element.style.transform = floatingLabelTransform;
+      }
+      if (notchedOutlineWidth !== null) {
+        this._notchedOutline?._setMaxWidth(notchedOutlineWidth);
+      }
+    }
+  }
+  _isAttachedToDom() {
+    const element = this._elementRef.nativeElement;
+    if (element.getRootNode) {
+      const rootNode = element.getRootNode();
+      return rootNode && rootNode !== element;
+    }
+    return document.documentElement.contains(element);
+  }
+  static \u0275fac = function MatFormField_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormField)();
+  };
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
+    type: _MatFormField,
+    selectors: [["mat-form-field"]],
+    contentQueries: function MatFormField_ContentQueries(rf, ctx, dirIndex) {
+      if (rf & 1) {
+        \u0275\u0275contentQuerySignal(dirIndex, ctx._labelChild, MatLabel, 5);
+        \u0275\u0275contentQuery(dirIndex, MatFormFieldControl, 5)(dirIndex, MAT_PREFIX, 5)(dirIndex, MAT_SUFFIX, 5)(dirIndex, MAT_ERROR, 5)(dirIndex, MatHint, 5);
+      }
+      if (rf & 2) {
+        \u0275\u0275queryAdvance();
+        let _t;
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._formFieldControl = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._prefixChildren = _t);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._suffixChildren = _t);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._errorChildren = _t);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._hintChildren = _t);
+      }
+    },
+    viewQuery: function MatFormField_Query(rf, ctx) {
+      if (rf & 1) {
+        \u0275\u0275viewQuerySignal(ctx._iconPrefixContainerSignal, _c33, 5)(ctx._textPrefixContainerSignal, _c43, 5)(ctx._iconSuffixContainerSignal, _c52, 5)(ctx._textSuffixContainerSignal, _c6, 5);
+        \u0275\u0275viewQuery(_c7, 5)(_c33, 5)(_c43, 5)(_c52, 5)(_c6, 5)(MatFormFieldFloatingLabel, 5)(MatFormFieldNotchedOutline, 5)(MatFormFieldLineRipple, 5);
+      }
+      if (rf & 2) {
+        \u0275\u0275queryAdvance(4);
+        let _t;
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textField = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._iconPrefixContainer = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textPrefixContainer = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._iconSuffixContainer = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textSuffixContainer = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._floatingLabel = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._notchedOutline = _t.first);
+        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._lineRipple = _t.first);
+      }
+    },
+    hostAttrs: [1, "mat-mdc-form-field"],
+    hostVars: 38,
+    hostBindings: function MatFormField_HostBindings(rf, ctx) {
+      if (rf & 2) {
+        \u0275\u0275classProp("mat-mdc-form-field-label-always-float", ctx._shouldAlwaysFloat())("mat-mdc-form-field-has-icon-prefix", ctx._hasIconPrefix)("mat-mdc-form-field-has-icon-suffix", ctx._hasIconSuffix)("mat-form-field-invalid", ctx._control.errorState)("mat-form-field-disabled", ctx._control.disabled)("mat-form-field-autofilled", ctx._control.autofilled)("mat-form-field-appearance-fill", ctx.appearance == "fill")("mat-form-field-appearance-outline", ctx.appearance == "outline")("mat-form-field-hide-placeholder", ctx._hasFloatingLabel() && !ctx._shouldLabelFloat())("mat-primary", ctx.color !== "accent" && ctx.color !== "warn")("mat-accent", ctx.color === "accent")("mat-warn", ctx.color === "warn")("ng-untouched", ctx._shouldForward("untouched"))("ng-touched", ctx._shouldForward("touched"))("ng-pristine", ctx._shouldForward("pristine"))("ng-dirty", ctx._shouldForward("dirty"))("ng-valid", ctx._shouldForward("valid"))("ng-invalid", ctx._shouldForward("invalid"))("ng-pending", ctx._shouldForward("pending"));
+      }
+    },
+    inputs: {
+      hideRequiredMarker: "hideRequiredMarker",
+      color: "color",
+      floatLabel: "floatLabel",
+      appearance: "appearance",
+      subscriptSizing: "subscriptSizing",
+      hintLabel: "hintLabel"
+    },
+    exportAs: ["matFormField"],
+    features: [\u0275\u0275ProvidersFeature([{
+      provide: MAT_FORM_FIELD,
+      useExisting: _MatFormField
+    }, {
+      provide: FLOATING_LABEL_PARENT,
+      useExisting: _MatFormField
+    }])],
+    ngContentSelectors: _c9,
+    decls: 18,
+    vars: 21,
+    consts: [["labelTemplate", ""], ["textField", ""], ["iconPrefixContainer", ""], ["textPrefixContainer", ""], ["textSuffixContainer", ""], ["iconSuffixContainer", ""], [1, "mat-mdc-text-field-wrapper", "mdc-text-field", 3, "click"], [1, "mat-mdc-form-field-focus-overlay"], [1, "mat-mdc-form-field-flex"], ["matFormFieldNotchedOutline", "", 3, "matFormFieldNotchedOutlineOpen"], [1, "mat-mdc-form-field-icon-prefix"], [1, "mat-mdc-form-field-text-prefix"], [1, "mat-mdc-form-field-infix"], [3, "ngTemplateOutlet"], [1, "mat-mdc-form-field-text-suffix"], [1, "mat-mdc-form-field-icon-suffix"], ["matFormFieldLineRipple", ""], ["aria-atomic", "true", "aria-live", "polite", 1, "mat-mdc-form-field-subscript-wrapper", "mat-mdc-form-field-bottom-align"], [1, "mat-mdc-form-field-error-wrapper"], [1, "mat-mdc-form-field-hint-wrapper"], ["matFormFieldFloatingLabel", "", 3, "floating", "monitorResize", "id"], ["aria-hidden", "true", 1, "mat-mdc-form-field-required-marker", "mdc-floating-label--required"], [3, "id"], [1, "mat-mdc-form-field-hint-spacer"]],
+    template: function MatFormField_Template(rf, ctx) {
+      if (rf & 1) {
+        const _r1 = \u0275\u0275getCurrentView();
+        \u0275\u0275projectionDef(_c8);
+        \u0275\u0275template(0, MatFormField_ng_template_0_Template, 1, 1, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
+        \u0275\u0275elementStart(2, "div", 6, 1);
+        \u0275\u0275listener("click", function MatFormField_Template_div_click_2_listener($event) {
+          \u0275\u0275restoreView(_r1);
+          return \u0275\u0275resetView(ctx._control.onContainerClick($event));
+        });
+        \u0275\u0275conditionalCreate(4, MatFormField_Conditional_4_Template, 1, 0, "div", 7);
+        \u0275\u0275elementStart(5, "div", 8);
+        \u0275\u0275conditionalCreate(6, MatFormField_Conditional_6_Template, 2, 2, "div", 9);
+        \u0275\u0275conditionalCreate(7, MatFormField_Conditional_7_Template, 3, 0, "div", 10);
+        \u0275\u0275conditionalCreate(8, MatFormField_Conditional_8_Template, 3, 0, "div", 11);
+        \u0275\u0275elementStart(9, "div", 12);
+        \u0275\u0275conditionalCreate(10, MatFormField_Conditional_10_Template, 1, 1, null, 13);
+        \u0275\u0275projection(11);
+        \u0275\u0275elementEnd();
+        \u0275\u0275conditionalCreate(12, MatFormField_Conditional_12_Template, 3, 0, "div", 14);
+        \u0275\u0275conditionalCreate(13, MatFormField_Conditional_13_Template, 3, 0, "div", 15);
+        \u0275\u0275elementEnd();
+        \u0275\u0275conditionalCreate(14, MatFormField_Conditional_14_Template, 1, 0, "div", 16);
+        \u0275\u0275elementEnd();
+        \u0275\u0275elementStart(15, "div", 17);
+        \u0275\u0275conditionalCreate(16, MatFormField_Case_16_Template, 2, 0, "div", 18)(17, MatFormField_Case_17_Template, 5, 1, "div", 19);
+        \u0275\u0275elementEnd();
+      }
+      if (rf & 2) {
+        let tmp_17_0;
+        \u0275\u0275advance(2);
+        \u0275\u0275classProp("mdc-text-field--filled", !ctx._hasOutline())("mdc-text-field--outlined", ctx._hasOutline())("mdc-text-field--no-label", !ctx._hasFloatingLabel())("mdc-text-field--disabled", ctx._control.disabled)("mdc-text-field--invalid", ctx._control.errorState);
+        \u0275\u0275advance(2);
+        \u0275\u0275conditional(!ctx._hasOutline() && !ctx._control.disabled ? 4 : -1);
+        \u0275\u0275advance(2);
+        \u0275\u0275conditional(ctx._hasOutline() ? 6 : -1);
+        \u0275\u0275advance();
+        \u0275\u0275conditional(ctx._hasIconPrefix ? 7 : -1);
+        \u0275\u0275advance();
+        \u0275\u0275conditional(ctx._hasTextPrefix ? 8 : -1);
+        \u0275\u0275advance(2);
+        \u0275\u0275conditional(!ctx._hasOutline() || ctx._forceDisplayInfixLabel() ? 10 : -1);
+        \u0275\u0275advance(2);
+        \u0275\u0275conditional(ctx._hasTextSuffix ? 12 : -1);
+        \u0275\u0275advance();
+        \u0275\u0275conditional(ctx._hasIconSuffix ? 13 : -1);
+        \u0275\u0275advance();
+        \u0275\u0275conditional(!ctx._hasOutline() ? 14 : -1);
+        \u0275\u0275advance();
+        \u0275\u0275classProp("mat-mdc-form-field-subscript-dynamic-size", ctx.subscriptSizing === "dynamic");
+        const subscriptMessageType_r4 = ctx._getSubscriptMessageType();
+        \u0275\u0275advance();
+        \u0275\u0275conditional((tmp_17_0 = subscriptMessageType_r4) === "error" ? 16 : tmp_17_0 === "hint" ? 17 : -1);
+      }
+    },
+    dependencies: [MatFormFieldFloatingLabel, MatFormFieldNotchedOutline, NgTemplateOutlet, MatFormFieldLineRipple, MatHint],
+    styles: ['.mdc-text-field{display:inline-flex;align-items:baseline;padding:0 16px;position:relative;box-sizing:border-box;overflow:hidden;will-change:opacity,transform,color;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.mdc-text-field__input{width:100%;min-width:0;border:none;border-radius:0;background:none;padding:0;-moz-appearance:none;-webkit-appearance:none;height:28px}.mdc-text-field__input::-webkit-calendar-picker-indicator,.mdc-text-field__input::-webkit-search-cancel-button{display:none}.mdc-text-field__input::-ms-clear{display:none}.mdc-text-field__input:focus{outline:none}.mdc-text-field__input:invalid{box-shadow:none}.mdc-text-field__input::placeholder{opacity:0}.mdc-text-field__input::-moz-placeholder{opacity:0}.mdc-text-field__input::-webkit-input-placeholder{opacity:0}.mdc-text-field__input:-ms-input-placeholder{opacity:0}.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mdc-text-field--focused .mdc-text-field__input::placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{opacity:1}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-moz-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-webkit-input-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive:-ms-input-placeholder{opacity:0}.mdc-text-field--outlined .mdc-text-field__input,.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{height:100%}.mdc-text-field--outlined .mdc-text-field__input{display:flex;border:none !important;background-color:rgba(0,0,0,0)}.mdc-text-field--disabled .mdc-text-field__input{pointer-events:auto}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-filled-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-filled-caret-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-outlined-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-outlined-caret-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-filled-error-caret-color, var(--mat-sys-error))}.mdc-text-field--outlined.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-outlined-error-caret-color, var(--mat-sys-error))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-filled-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}@media(forced-colors: active){.mdc-text-field--disabled .mdc-text-field__input{background-color:Window}}.mdc-text-field--filled{height:56px;border-bottom-right-radius:0;border-bottom-left-radius:0;border-top-left-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small));border-top-right-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--filled:not(.mdc-text-field--disabled){background-color:var(--mat-form-field-filled-container-color, var(--mat-sys-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled{background-color:var(--mat-form-field-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent))}.mdc-text-field--outlined{height:56px;overflow:visible;padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)));padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px)}[dir=rtl] .mdc-text-field--outlined{padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px);padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}.mdc-floating-label{position:absolute;left:0;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform}[dir=rtl] .mdc-floating-label{right:0;left:auto;transform-origin:right top;text-align:right}.mdc-text-field .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-text-field--outlined .mdc-floating-label{left:4px;right:auto}[dir=rtl] .mdc-text-field--outlined .mdc-floating-label{left:auto;right:4px}.mdc-text-field--filled .mdc-floating-label{left:16px;right:auto}[dir=rtl] .mdc-text-field--filled .mdc-floating-label{left:auto;right:16px}.mdc-text-field--disabled .mdc-floating-label{cursor:default}@media(forced-colors: active){.mdc-text-field--disabled .mdc-floating-label{z-index:1}}.mdc-text-field--filled.mdc-text-field--no-label .mdc-floating-label{display:none}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-filled-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-filled-hover-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-filled-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-filled-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-filled-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--filled .mdc-floating-label{font-family:var(--mat-form-field-filled-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-filled-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-filled-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-filled-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-outlined-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-outlined-hover-label-text-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-outlined-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-outlined-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-outlined-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined .mdc-floating-label{font-family:var(--mat-form-field-outlined-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-outlined-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-outlined-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-outlined-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-floating-label--float-above{cursor:auto;transform:translateY(-106%) scale(0.75)}.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1);font-size:.75rem}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:133.3333333333%}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:1px;margin-right:0;content:"*"}[dir=rtl] .mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:0;margin-right:1px}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline{text-align:right}.mdc-text-field--outlined .mdc-notched-outline{z-index:1}.mat-mdc-notch-piece{box-sizing:border-box;height:100%;pointer-events:none;border:none;border-top:1px solid;border-bottom:1px solid}.mdc-text-field--focused .mat-mdc-notch-piece{border-width:2px}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-outline-color, var(--mat-sys-outline));border-width:var(--mat-form-field-outlined-outline-width, 1px)}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-hover-outline-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-focus-outline-color, var(--mat-sys-primary))}.mdc-text-field--outlined.mdc-text-field--disabled .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-disabled-outline-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-notched-outline .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-hover-outline-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-focus-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline .mat-mdc-notch-piece{border-width:var(--mat-form-field-outlined-focus-outline-width, 2px)}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}[dir=rtl] .mdc-notched-outline__leading{border-left:none;border-right:1px solid;border-bottom-left-radius:0;border-top-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__trailing{flex-grow:1;border-left:none;border-right:1px solid;border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}[dir=rtl] .mdc-notched-outline__trailing{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__notch{flex:0 0 auto;width:auto}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:min(var(--mat-form-field-notch-max-width, 100%),calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{max-width:min(100%,calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-text-field--focused.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{z-index:1;border-bottom-width:var(--mat-form-field-filled-active-indicator-height, 1px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-active-indicator-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-hover-active-indicator-color, var(--mat-sys-on-surface))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-disabled-active-indicator-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-active-indicator-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-hover-active-indicator-color, var(--mat-sys-on-error-container))}.mdc-line-ripple::after{transform:scaleX(0);opacity:0;z-index:2}.mdc-text-field--filled .mdc-line-ripple::after{border-bottom-width:var(--mat-form-field-filled-focus-active-indicator-height, 2px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-focus-active-indicator-color, var(--mat-sys-primary))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-error-focus-active-indicator-color, var(--mat-sys-error))}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-text-field--disabled{pointer-events:none}.mat-mdc-form-field-textarea-control{vertical-align:middle;resize:vertical;box-sizing:border-box;height:auto;margin:0;padding:0;border:none;overflow:auto}.mat-mdc-form-field-input-control.mat-mdc-form-field-input-control{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font:inherit;letter-spacing:inherit;text-decoration:inherit;text-transform:inherit;border:none}.mat-mdc-form-field .mat-mdc-floating-label.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;line-height:normal;pointer-events:all;will-change:auto}.mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label{cursor:inherit}.mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input,.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{height:auto}.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control.mdc-text-field__input[type=color]{height:23px}.mat-mdc-text-field-wrapper{height:auto;flex:auto;will-change:auto}.mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-left:0;--mat-mdc-form-field-label-offset-x: -16px}.mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-right:0}[dir=rtl] .mat-mdc-text-field-wrapper{padding-left:16px;padding-right:16px}[dir=rtl] .mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-left:0}[dir=rtl] .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-right:0}.mat-form-field-disabled .mdc-text-field__input::placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-label-always-float .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}.mat-mdc-text-field-wrapper .mat-mdc-form-field-infix .mat-mdc-floating-label{left:auto;right:auto}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-text-field__input{display:inline-block}.mat-mdc-form-field .mat-mdc-text-field-wrapper.mdc-text-field .mdc-notched-outline__notch{padding-top:0}.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:1px solid rgba(0,0,0,0)}[dir=rtl] .mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:none;border-right:1px solid rgba(0,0,0,0)}.mat-mdc-form-field-infix{min-height:var(--mat-form-field-container-height, 56px);padding-top:var(--mat-form-field-filled-with-label-container-padding-top, 24px);padding-bottom:var(--mat-form-field-filled-with-label-container-padding-bottom, 8px)}.mdc-text-field--outlined .mat-mdc-form-field-infix,.mdc-text-field--no-label .mat-mdc-form-field-infix{padding-top:var(--mat-form-field-container-vertical-padding, 16px);padding-bottom:var(--mat-form-field-container-vertical-padding, 16px)}.mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-floating-label{top:calc(var(--mat-form-field-container-height, 56px)/2)}.mdc-text-field--filled .mat-mdc-floating-label{display:var(--mat-form-field-filled-label-display, block)}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{--mat-mdc-form-field-label-transform: translateY(calc(calc(6.75px + var(--mat-form-field-container-height, 56px) / 2) * -1)) scale(var(--mat-mdc-form-field-floating-label-scale, 0.75));transform:var(--mat-mdc-form-field-label-transform)}@keyframes _mat-form-field-subscript-animation{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}.mat-mdc-form-field-subscript-wrapper{box-sizing:border-box;width:100%;position:relative}.mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-error-wrapper{position:absolute;top:0;left:0;right:0;padding:0 16px;opacity:1;transform:translateY(0);animation:_mat-form-field-subscript-animation 0ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-error-wrapper{position:static}.mat-mdc-form-field-bottom-align::before{content:"";display:inline-block;height:16px}.mat-mdc-form-field-bottom-align.mat-mdc-form-field-subscript-dynamic-size::before{content:unset}.mat-mdc-form-field-hint-end{order:1}.mat-mdc-form-field-hint-wrapper{display:flex}.mat-mdc-form-field-hint-spacer{flex:1 0 1em}.mat-mdc-form-field-error{display:block;color:var(--mat-form-field-error-text-color, var(--mat-sys-error))}.mat-mdc-form-field-subscript-wrapper,.mat-mdc-form-field-bottom-align::before{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-subscript-text-font, var(--mat-sys-body-small-font));line-height:var(--mat-form-field-subscript-text-line-height, var(--mat-sys-body-small-line-height));font-size:var(--mat-form-field-subscript-text-size, var(--mat-sys-body-small-size));letter-spacing:var(--mat-form-field-subscript-text-tracking, var(--mat-sys-body-small-tracking));font-weight:var(--mat-form-field-subscript-text-weight, var(--mat-sys-body-small-weight))}.mat-mdc-form-field-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;opacity:0;pointer-events:none;background-color:var(--mat-form-field-state-layer-color, var(--mat-sys-on-surface))}.mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-hover-state-layer-opacity, var(--mat-sys-hover-state-layer-opacity))}.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-focus-state-layer-opacity, 0)}select.mat-mdc-form-field-input-control{-moz-appearance:none;-webkit-appearance:none;background-color:rgba(0,0,0,0);display:inline-flex;box-sizing:border-box}select.mat-mdc-form-field-input-control:not(:disabled){cursor:pointer}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option{color:var(--mat-form-field-select-option-text-color, var(--mat-sys-neutral10))}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option:disabled{color:var(--mat-form-field-select-disabled-option-text-color, color-mix(in srgb, var(--mat-sys-neutral10) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{content:"";width:0;height:0;border-left:5px solid rgba(0,0,0,0);border-right:5px solid rgba(0,0,0,0);border-top:5px solid;position:absolute;right:0;top:50%;margin-top:-2.5px;pointer-events:none;color:var(--mat-form-field-enabled-select-arrow-color, var(--mat-sys-on-surface-variant))}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{right:auto;left:0}.mat-mdc-form-field-type-mat-native-select.mat-focused .mat-mdc-form-field-infix::after{color:var(--mat-form-field-focus-select-arrow-color, var(--mat-sys-primary))}.mat-mdc-form-field-type-mat-native-select.mat-form-field-disabled .mat-mdc-form-field-infix::after{color:var(--mat-form-field-disabled-select-arrow-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:15px}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:0;padding-left:15px}@media(forced-colors: active){.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper{outline:solid 1px}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-form-field-disabled .mat-mdc-text-field-wrapper{outline-color:GrayText}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-focused .mat-mdc-text-field-wrapper{outline:dashed 3px}}@media(forced-colors: active){.mat-mdc-form-field.mat-focused .mdc-notched-outline{border:dashed 3px}}.mat-mdc-form-field-input-control[type=date],.mat-mdc-form-field-input-control[type=datetime],.mat-mdc-form-field-input-control[type=datetime-local],.mat-mdc-form-field-input-control[type=month],.mat-mdc-form-field-input-control[type=week],.mat-mdc-form-field-input-control[type=time]{line-height:1}.mat-mdc-form-field-input-control::-webkit-datetime-edit{line-height:1;padding:0;margin-bottom:-2px}.mat-mdc-form-field{--mat-mdc-form-field-floating-label-scale: 0.75;display:inline-flex;flex-direction:column;min-width:0;text-align:left;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-container-text-font, var(--mat-sys-body-large-font));line-height:var(--mat-form-field-container-text-line-height, var(--mat-sys-body-large-line-height));font-size:var(--mat-form-field-container-text-size, var(--mat-sys-body-large-size));letter-spacing:var(--mat-form-field-container-text-tracking, var(--mat-sys-body-large-tracking));font-weight:var(--mat-form-field-container-text-weight, var(--mat-sys-body-large-weight))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-floating-label--float-above{font-size:calc(var(--mat-form-field-outlined-label-text-populated-size)*var(--mat-mdc-form-field-floating-label-scale))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:var(--mat-form-field-outlined-label-text-populated-size)}[dir=rtl] .mat-mdc-form-field{text-align:right}.mat-mdc-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-mdc-text-field-wrapper{width:100%;z-index:0}.mat-mdc-form-field-icon-prefix,.mat-mdc-form-field-icon-suffix{align-self:center;line-height:0;pointer-events:auto;position:relative;z-index:1}.mat-mdc-form-field-icon-prefix>.mat-icon,.mat-mdc-form-field-icon-suffix>.mat-icon{padding:0 12px;box-sizing:content-box}.mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-leading-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-disabled-leading-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-trailing-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-disabled-trailing-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-invalid .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-trailing-icon-color, var(--mat-sys-error))}.mat-form-field-invalid:not(.mat-focused):not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-hover-trailing-icon-color, var(--mat-sys-on-error-container))}.mat-form-field-invalid.mat-focused .mat-mdc-text-field-wrapper .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-focus-trailing-icon-color, var(--mat-sys-error))}.mat-mdc-form-field-icon-prefix,[dir=rtl] .mat-mdc-form-field-icon-suffix{padding:0 4px 0 0}.mat-mdc-form-field-icon-suffix,[dir=rtl] .mat-mdc-form-field-icon-prefix{padding:0 0 0 4px}.mat-mdc-form-field-subscript-wrapper .mat-icon,.mat-mdc-form-field label .mat-icon{width:1em;height:1em;font-size:inherit}.mat-mdc-form-field-infix{flex:auto;min-width:0;width:180px;position:relative;box-sizing:border-box}.mat-mdc-form-field-infix:has(textarea[cols]){width:auto}.mat-mdc-form-field .mdc-notched-outline__notch{margin-left:-1px;-webkit-clip-path:inset(-9em -999em -9em 1px);clip-path:inset(-9em -999em -9em 1px)}[dir=rtl] .mat-mdc-form-field .mdc-notched-outline__notch{margin-left:0;margin-right:-1px;-webkit-clip-path:inset(-9em 1px -9em -999em);clip-path:inset(-9em 1px -9em -999em)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-floating-label{transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input{transition:opacity 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-moz-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-webkit-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input:-ms-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field--filled:not(.mdc-ripple-upgraded):focus .mdc-text-field__ripple::before{transition-duration:75ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-error-wrapper{animation-duration:300ms}.mdc-notched-outline .mdc-floating-label{max-width:calc(100% + 1px)}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(133.3333333333% + 1px)}\n'],
+    encapsulation: 2,
+    changeDetection: 0
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormField, [{
+    type: Component,
+    args: [{
+      selector: "mat-form-field",
+      exportAs: "matFormField",
+      host: {
+        "class": "mat-mdc-form-field",
+        "[class.mat-mdc-form-field-label-always-float]": "_shouldAlwaysFloat()",
+        "[class.mat-mdc-form-field-has-icon-prefix]": "_hasIconPrefix",
+        "[class.mat-mdc-form-field-has-icon-suffix]": "_hasIconSuffix",
+        "[class.mat-form-field-invalid]": "_control.errorState",
+        "[class.mat-form-field-disabled]": "_control.disabled",
+        "[class.mat-form-field-autofilled]": "_control.autofilled",
+        "[class.mat-form-field-appearance-fill]": 'appearance == "fill"',
+        "[class.mat-form-field-appearance-outline]": 'appearance == "outline"',
+        "[class.mat-form-field-hide-placeholder]": "_hasFloatingLabel() && !_shouldLabelFloat()",
+        "[class.mat-primary]": 'color !== "accent" && color !== "warn"',
+        "[class.mat-accent]": 'color === "accent"',
+        "[class.mat-warn]": 'color === "warn"',
+        "[class.ng-untouched]": '_shouldForward("untouched")',
+        "[class.ng-touched]": '_shouldForward("touched")',
+        "[class.ng-pristine]": '_shouldForward("pristine")',
+        "[class.ng-dirty]": '_shouldForward("dirty")',
+        "[class.ng-valid]": '_shouldForward("valid")',
+        "[class.ng-invalid]": '_shouldForward("invalid")',
+        "[class.ng-pending]": '_shouldForward("pending")'
+      },
+      encapsulation: ViewEncapsulation.None,
+      changeDetection: ChangeDetectionStrategy.OnPush,
+      providers: [{
+        provide: MAT_FORM_FIELD,
+        useExisting: MatFormField
+      }, {
+        provide: FLOATING_LABEL_PARENT,
+        useExisting: MatFormField
+      }],
+      imports: [MatFormFieldFloatingLabel, MatFormFieldNotchedOutline, NgTemplateOutlet, MatFormFieldLineRipple, MatHint],
+      template: '<ng-template #labelTemplate>\n  <!--\n    MDC recommends that the text-field is a `<label>` element. This rather complicates the\n    setup because it would require every form-field control to explicitly set `aria-labelledby`.\n    This is because the `<label>` itself contains more than the actual label (e.g. prefix, suffix\n    or other projected content), and screen readers could potentially read out undesired content.\n    Excluding elements from being printed out requires them to be marked with `aria-hidden`, or\n    the form control is set to a scoped element for the label (using `aria-labelledby`). Both of\n    these options seem to complicate the setup because we know exactly what content is rendered\n    as part of the label, and we don\'t want to spend resources on walking through projected content\n    to set `aria-hidden`. Nor do we want to set `aria-labelledby` on every form control if we could\n    simply link the label to the control using the label `for` attribute.\n  -->\n  @if (_hasFloatingLabel()) {\n    <label\n      matFormFieldFloatingLabel\n      [floating]="_shouldLabelFloat()"\n      [monitorResize]="_hasOutline()"\n      [id]="_labelId"\n      [attr.for]="_control.disableAutomaticLabeling ? null : _control.id"\n    >\n      <ng-content select="mat-label"></ng-content>\n      <!--\n        We set the required marker as a separate element, in order to make it easier to target if\n        apps want to override it and to be able to set `aria-hidden` so that screen readers don\'t\n        pick it up.\n       -->\n      @if (!hideRequiredMarker && _control.required) {\n        <span\n          aria-hidden="true"\n          class="mat-mdc-form-field-required-marker mdc-floating-label--required"\n        ></span>\n      }\n    </label>\n  }\n</ng-template>\n\n<div\n  class="mat-mdc-text-field-wrapper mdc-text-field"\n  #textField\n  [class.mdc-text-field--filled]="!_hasOutline()"\n  [class.mdc-text-field--outlined]="_hasOutline()"\n  [class.mdc-text-field--no-label]="!_hasFloatingLabel()"\n  [class.mdc-text-field--disabled]="_control.disabled"\n  [class.mdc-text-field--invalid]="_control.errorState"\n  (click)="_control.onContainerClick($event)"\n>\n  @if (!_hasOutline() && !_control.disabled) {\n    <div class="mat-mdc-form-field-focus-overlay"></div>\n  }\n  <div class="mat-mdc-form-field-flex">\n    @if (_hasOutline()) {\n      <div matFormFieldNotchedOutline [matFormFieldNotchedOutlineOpen]="_shouldLabelFloat()">\n        @if (!_forceDisplayInfixLabel()) {\n          <ng-template [ngTemplateOutlet]="labelTemplate"></ng-template>\n        }\n      </div>\n    }\n\n    @if (_hasIconPrefix) {\n      <div class="mat-mdc-form-field-icon-prefix" #iconPrefixContainer>\n        <ng-content select="[matPrefix], [matIconPrefix]"></ng-content>\n      </div>\n    }\n\n    @if (_hasTextPrefix) {\n      <div class="mat-mdc-form-field-text-prefix" #textPrefixContainer>\n        <ng-content select="[matTextPrefix]"></ng-content>\n      </div>\n    }\n\n    <div class="mat-mdc-form-field-infix">\n      @if (!_hasOutline() || _forceDisplayInfixLabel()) {\n        <ng-template [ngTemplateOutlet]="labelTemplate"></ng-template>\n      }\n\n      <ng-content></ng-content>\n    </div>\n\n    @if (_hasTextSuffix) {\n      <div class="mat-mdc-form-field-text-suffix" #textSuffixContainer>\n        <ng-content select="[matTextSuffix]"></ng-content>\n      </div>\n    }\n\n    @if (_hasIconSuffix) {\n      <div class="mat-mdc-form-field-icon-suffix" #iconSuffixContainer>\n        <ng-content select="[matSuffix], [matIconSuffix]"></ng-content>\n      </div>\n    }\n  </div>\n\n  @if (!_hasOutline()) {\n    <div matFormFieldLineRipple></div>\n  }\n</div>\n\n<div aria-atomic="true" aria-live="polite"\n  class="mat-mdc-form-field-subscript-wrapper mat-mdc-form-field-bottom-align"\n  [class.mat-mdc-form-field-subscript-dynamic-size]="subscriptSizing === \'dynamic\'"\n>\n  @let subscriptMessageType = _getSubscriptMessageType();\n\n  @switch (subscriptMessageType) {\n    @case (\'error\') {\n      <div class="mat-mdc-form-field-error-wrapper">\n        <ng-content select="mat-error, [matError]"></ng-content>\n      </div>\n    }\n\n    @case (\'hint\') {\n      <div class="mat-mdc-form-field-hint-wrapper">\n        @if (hintLabel) {\n          <mat-hint [id]="_hintLabelId">{{hintLabel}}</mat-hint>\n        }\n        <ng-content select="mat-hint:not([align=\'end\'])"></ng-content>\n        <div class="mat-mdc-form-field-hint-spacer"></div>\n        <ng-content select="mat-hint[align=\'end\']"></ng-content>\n      </div>\n    }\n  }\n</div>\n',
+      styles: ['.mdc-text-field{display:inline-flex;align-items:baseline;padding:0 16px;position:relative;box-sizing:border-box;overflow:hidden;will-change:opacity,transform,color;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.mdc-text-field__input{width:100%;min-width:0;border:none;border-radius:0;background:none;padding:0;-moz-appearance:none;-webkit-appearance:none;height:28px}.mdc-text-field__input::-webkit-calendar-picker-indicator,.mdc-text-field__input::-webkit-search-cancel-button{display:none}.mdc-text-field__input::-ms-clear{display:none}.mdc-text-field__input:focus{outline:none}.mdc-text-field__input:invalid{box-shadow:none}.mdc-text-field__input::placeholder{opacity:0}.mdc-text-field__input::-moz-placeholder{opacity:0}.mdc-text-field__input::-webkit-input-placeholder{opacity:0}.mdc-text-field__input:-ms-input-placeholder{opacity:0}.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mdc-text-field--focused .mdc-text-field__input::placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{opacity:1}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-moz-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-webkit-input-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive:-ms-input-placeholder{opacity:0}.mdc-text-field--outlined .mdc-text-field__input,.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{height:100%}.mdc-text-field--outlined .mdc-text-field__input{display:flex;border:none !important;background-color:rgba(0,0,0,0)}.mdc-text-field--disabled .mdc-text-field__input{pointer-events:auto}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-filled-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-filled-caret-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-outlined-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-outlined-caret-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-filled-error-caret-color, var(--mat-sys-error))}.mdc-text-field--outlined.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-outlined-error-caret-color, var(--mat-sys-error))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-filled-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}@media(forced-colors: active){.mdc-text-field--disabled .mdc-text-field__input{background-color:Window}}.mdc-text-field--filled{height:56px;border-bottom-right-radius:0;border-bottom-left-radius:0;border-top-left-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small));border-top-right-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--filled:not(.mdc-text-field--disabled){background-color:var(--mat-form-field-filled-container-color, var(--mat-sys-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled{background-color:var(--mat-form-field-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent))}.mdc-text-field--outlined{height:56px;overflow:visible;padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)));padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px)}[dir=rtl] .mdc-text-field--outlined{padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px);padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}.mdc-floating-label{position:absolute;left:0;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform}[dir=rtl] .mdc-floating-label{right:0;left:auto;transform-origin:right top;text-align:right}.mdc-text-field .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-text-field--outlined .mdc-floating-label{left:4px;right:auto}[dir=rtl] .mdc-text-field--outlined .mdc-floating-label{left:auto;right:4px}.mdc-text-field--filled .mdc-floating-label{left:16px;right:auto}[dir=rtl] .mdc-text-field--filled .mdc-floating-label{left:auto;right:16px}.mdc-text-field--disabled .mdc-floating-label{cursor:default}@media(forced-colors: active){.mdc-text-field--disabled .mdc-floating-label{z-index:1}}.mdc-text-field--filled.mdc-text-field--no-label .mdc-floating-label{display:none}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-filled-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-filled-hover-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-filled-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-filled-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-filled-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--filled .mdc-floating-label{font-family:var(--mat-form-field-filled-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-filled-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-filled-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-filled-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-outlined-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-outlined-hover-label-text-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-outlined-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-outlined-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-outlined-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined .mdc-floating-label{font-family:var(--mat-form-field-outlined-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-outlined-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-outlined-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-outlined-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-floating-label--float-above{cursor:auto;transform:translateY(-106%) scale(0.75)}.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1);font-size:.75rem}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:133.3333333333%}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:1px;margin-right:0;content:"*"}[dir=rtl] .mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:0;margin-right:1px}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline{text-align:right}.mdc-text-field--outlined .mdc-notched-outline{z-index:1}.mat-mdc-notch-piece{box-sizing:border-box;height:100%;pointer-events:none;border:none;border-top:1px solid;border-bottom:1px solid}.mdc-text-field--focused .mat-mdc-notch-piece{border-width:2px}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-outline-color, var(--mat-sys-outline));border-width:var(--mat-form-field-outlined-outline-width, 1px)}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-hover-outline-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-focus-outline-color, var(--mat-sys-primary))}.mdc-text-field--outlined.mdc-text-field--disabled .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-disabled-outline-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-notched-outline .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-hover-outline-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-focus-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline .mat-mdc-notch-piece{border-width:var(--mat-form-field-outlined-focus-outline-width, 2px)}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}[dir=rtl] .mdc-notched-outline__leading{border-left:none;border-right:1px solid;border-bottom-left-radius:0;border-top-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__trailing{flex-grow:1;border-left:none;border-right:1px solid;border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}[dir=rtl] .mdc-notched-outline__trailing{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__notch{flex:0 0 auto;width:auto}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:min(var(--mat-form-field-notch-max-width, 100%),calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{max-width:min(100%,calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-text-field--focused.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{z-index:1;border-bottom-width:var(--mat-form-field-filled-active-indicator-height, 1px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-active-indicator-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-hover-active-indicator-color, var(--mat-sys-on-surface))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-disabled-active-indicator-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-active-indicator-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-hover-active-indicator-color, var(--mat-sys-on-error-container))}.mdc-line-ripple::after{transform:scaleX(0);opacity:0;z-index:2}.mdc-text-field--filled .mdc-line-ripple::after{border-bottom-width:var(--mat-form-field-filled-focus-active-indicator-height, 2px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-focus-active-indicator-color, var(--mat-sys-primary))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-error-focus-active-indicator-color, var(--mat-sys-error))}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-text-field--disabled{pointer-events:none}.mat-mdc-form-field-textarea-control{vertical-align:middle;resize:vertical;box-sizing:border-box;height:auto;margin:0;padding:0;border:none;overflow:auto}.mat-mdc-form-field-input-control.mat-mdc-form-field-input-control{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font:inherit;letter-spacing:inherit;text-decoration:inherit;text-transform:inherit;border:none}.mat-mdc-form-field .mat-mdc-floating-label.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;line-height:normal;pointer-events:all;will-change:auto}.mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label{cursor:inherit}.mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input,.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{height:auto}.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control.mdc-text-field__input[type=color]{height:23px}.mat-mdc-text-field-wrapper{height:auto;flex:auto;will-change:auto}.mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-left:0;--mat-mdc-form-field-label-offset-x: -16px}.mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-right:0}[dir=rtl] .mat-mdc-text-field-wrapper{padding-left:16px;padding-right:16px}[dir=rtl] .mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-left:0}[dir=rtl] .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-right:0}.mat-form-field-disabled .mdc-text-field__input::placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-label-always-float .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}.mat-mdc-text-field-wrapper .mat-mdc-form-field-infix .mat-mdc-floating-label{left:auto;right:auto}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-text-field__input{display:inline-block}.mat-mdc-form-field .mat-mdc-text-field-wrapper.mdc-text-field .mdc-notched-outline__notch{padding-top:0}.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:1px solid rgba(0,0,0,0)}[dir=rtl] .mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:none;border-right:1px solid rgba(0,0,0,0)}.mat-mdc-form-field-infix{min-height:var(--mat-form-field-container-height, 56px);padding-top:var(--mat-form-field-filled-with-label-container-padding-top, 24px);padding-bottom:var(--mat-form-field-filled-with-label-container-padding-bottom, 8px)}.mdc-text-field--outlined .mat-mdc-form-field-infix,.mdc-text-field--no-label .mat-mdc-form-field-infix{padding-top:var(--mat-form-field-container-vertical-padding, 16px);padding-bottom:var(--mat-form-field-container-vertical-padding, 16px)}.mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-floating-label{top:calc(var(--mat-form-field-container-height, 56px)/2)}.mdc-text-field--filled .mat-mdc-floating-label{display:var(--mat-form-field-filled-label-display, block)}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{--mat-mdc-form-field-label-transform: translateY(calc(calc(6.75px + var(--mat-form-field-container-height, 56px) / 2) * -1)) scale(var(--mat-mdc-form-field-floating-label-scale, 0.75));transform:var(--mat-mdc-form-field-label-transform)}@keyframes _mat-form-field-subscript-animation{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}.mat-mdc-form-field-subscript-wrapper{box-sizing:border-box;width:100%;position:relative}.mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-error-wrapper{position:absolute;top:0;left:0;right:0;padding:0 16px;opacity:1;transform:translateY(0);animation:_mat-form-field-subscript-animation 0ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-error-wrapper{position:static}.mat-mdc-form-field-bottom-align::before{content:"";display:inline-block;height:16px}.mat-mdc-form-field-bottom-align.mat-mdc-form-field-subscript-dynamic-size::before{content:unset}.mat-mdc-form-field-hint-end{order:1}.mat-mdc-form-field-hint-wrapper{display:flex}.mat-mdc-form-field-hint-spacer{flex:1 0 1em}.mat-mdc-form-field-error{display:block;color:var(--mat-form-field-error-text-color, var(--mat-sys-error))}.mat-mdc-form-field-subscript-wrapper,.mat-mdc-form-field-bottom-align::before{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-subscript-text-font, var(--mat-sys-body-small-font));line-height:var(--mat-form-field-subscript-text-line-height, var(--mat-sys-body-small-line-height));font-size:var(--mat-form-field-subscript-text-size, var(--mat-sys-body-small-size));letter-spacing:var(--mat-form-field-subscript-text-tracking, var(--mat-sys-body-small-tracking));font-weight:var(--mat-form-field-subscript-text-weight, var(--mat-sys-body-small-weight))}.mat-mdc-form-field-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;opacity:0;pointer-events:none;background-color:var(--mat-form-field-state-layer-color, var(--mat-sys-on-surface))}.mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-hover-state-layer-opacity, var(--mat-sys-hover-state-layer-opacity))}.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-focus-state-layer-opacity, 0)}select.mat-mdc-form-field-input-control{-moz-appearance:none;-webkit-appearance:none;background-color:rgba(0,0,0,0);display:inline-flex;box-sizing:border-box}select.mat-mdc-form-field-input-control:not(:disabled){cursor:pointer}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option{color:var(--mat-form-field-select-option-text-color, var(--mat-sys-neutral10))}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option:disabled{color:var(--mat-form-field-select-disabled-option-text-color, color-mix(in srgb, var(--mat-sys-neutral10) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{content:"";width:0;height:0;border-left:5px solid rgba(0,0,0,0);border-right:5px solid rgba(0,0,0,0);border-top:5px solid;position:absolute;right:0;top:50%;margin-top:-2.5px;pointer-events:none;color:var(--mat-form-field-enabled-select-arrow-color, var(--mat-sys-on-surface-variant))}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{right:auto;left:0}.mat-mdc-form-field-type-mat-native-select.mat-focused .mat-mdc-form-field-infix::after{color:var(--mat-form-field-focus-select-arrow-color, var(--mat-sys-primary))}.mat-mdc-form-field-type-mat-native-select.mat-form-field-disabled .mat-mdc-form-field-infix::after{color:var(--mat-form-field-disabled-select-arrow-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:15px}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:0;padding-left:15px}@media(forced-colors: active){.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper{outline:solid 1px}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-form-field-disabled .mat-mdc-text-field-wrapper{outline-color:GrayText}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-focused .mat-mdc-text-field-wrapper{outline:dashed 3px}}@media(forced-colors: active){.mat-mdc-form-field.mat-focused .mdc-notched-outline{border:dashed 3px}}.mat-mdc-form-field-input-control[type=date],.mat-mdc-form-field-input-control[type=datetime],.mat-mdc-form-field-input-control[type=datetime-local],.mat-mdc-form-field-input-control[type=month],.mat-mdc-form-field-input-control[type=week],.mat-mdc-form-field-input-control[type=time]{line-height:1}.mat-mdc-form-field-input-control::-webkit-datetime-edit{line-height:1;padding:0;margin-bottom:-2px}.mat-mdc-form-field{--mat-mdc-form-field-floating-label-scale: 0.75;display:inline-flex;flex-direction:column;min-width:0;text-align:left;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-container-text-font, var(--mat-sys-body-large-font));line-height:var(--mat-form-field-container-text-line-height, var(--mat-sys-body-large-line-height));font-size:var(--mat-form-field-container-text-size, var(--mat-sys-body-large-size));letter-spacing:var(--mat-form-field-container-text-tracking, var(--mat-sys-body-large-tracking));font-weight:var(--mat-form-field-container-text-weight, var(--mat-sys-body-large-weight))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-floating-label--float-above{font-size:calc(var(--mat-form-field-outlined-label-text-populated-size)*var(--mat-mdc-form-field-floating-label-scale))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:var(--mat-form-field-outlined-label-text-populated-size)}[dir=rtl] .mat-mdc-form-field{text-align:right}.mat-mdc-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-mdc-text-field-wrapper{width:100%;z-index:0}.mat-mdc-form-field-icon-prefix,.mat-mdc-form-field-icon-suffix{align-self:center;line-height:0;pointer-events:auto;position:relative;z-index:1}.mat-mdc-form-field-icon-prefix>.mat-icon,.mat-mdc-form-field-icon-suffix>.mat-icon{padding:0 12px;box-sizing:content-box}.mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-leading-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-disabled-leading-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-trailing-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-disabled-trailing-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-invalid .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-trailing-icon-color, var(--mat-sys-error))}.mat-form-field-invalid:not(.mat-focused):not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-hover-trailing-icon-color, var(--mat-sys-on-error-container))}.mat-form-field-invalid.mat-focused .mat-mdc-text-field-wrapper .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-focus-trailing-icon-color, var(--mat-sys-error))}.mat-mdc-form-field-icon-prefix,[dir=rtl] .mat-mdc-form-field-icon-suffix{padding:0 4px 0 0}.mat-mdc-form-field-icon-suffix,[dir=rtl] .mat-mdc-form-field-icon-prefix{padding:0 0 0 4px}.mat-mdc-form-field-subscript-wrapper .mat-icon,.mat-mdc-form-field label .mat-icon{width:1em;height:1em;font-size:inherit}.mat-mdc-form-field-infix{flex:auto;min-width:0;width:180px;position:relative;box-sizing:border-box}.mat-mdc-form-field-infix:has(textarea[cols]){width:auto}.mat-mdc-form-field .mdc-notched-outline__notch{margin-left:-1px;-webkit-clip-path:inset(-9em -999em -9em 1px);clip-path:inset(-9em -999em -9em 1px)}[dir=rtl] .mat-mdc-form-field .mdc-notched-outline__notch{margin-left:0;margin-right:-1px;-webkit-clip-path:inset(-9em 1px -9em -999em);clip-path:inset(-9em 1px -9em -999em)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-floating-label{transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input{transition:opacity 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-moz-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-webkit-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input:-ms-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field--filled:not(.mdc-ripple-upgraded):focus .mdc-text-field__ripple::before{transition-duration:75ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-error-wrapper{animation-duration:300ms}.mdc-notched-outline .mdc-floating-label{max-width:calc(100% + 1px)}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(133.3333333333% + 1px)}\n']
+    }]
+  }], () => [], {
+    _textField: [{
+      type: ViewChild,
+      args: ["textField"]
+    }],
+    _iconPrefixContainer: [{
+      type: ViewChild,
+      args: ["iconPrefixContainer"]
+    }],
+    _textPrefixContainer: [{
+      type: ViewChild,
+      args: ["textPrefixContainer"]
+    }],
+    _iconSuffixContainer: [{
+      type: ViewChild,
+      args: ["iconSuffixContainer"]
+    }],
+    _textSuffixContainer: [{
+      type: ViewChild,
+      args: ["textSuffixContainer"]
+    }],
+    _floatingLabel: [{
+      type: ViewChild,
+      args: [MatFormFieldFloatingLabel]
+    }],
+    _notchedOutline: [{
+      type: ViewChild,
+      args: [MatFormFieldNotchedOutline]
+    }],
+    _lineRipple: [{
+      type: ViewChild,
+      args: [MatFormFieldLineRipple]
+    }],
+    _iconPrefixContainerSignal: [{
+      type: ViewChild,
+      args: ["iconPrefixContainer", {
+        isSignal: true
+      }]
+    }],
+    _textPrefixContainerSignal: [{
+      type: ViewChild,
+      args: ["textPrefixContainer", {
+        isSignal: true
+      }]
+    }],
+    _iconSuffixContainerSignal: [{
+      type: ViewChild,
+      args: ["iconSuffixContainer", {
+        isSignal: true
+      }]
+    }],
+    _textSuffixContainerSignal: [{
+      type: ViewChild,
+      args: ["textSuffixContainer", {
+        isSignal: true
+      }]
+    }],
+    _formFieldControl: [{
+      type: ContentChild,
+      args: [MatFormFieldControl]
+    }],
+    _prefixChildren: [{
+      type: ContentChildren,
+      args: [MAT_PREFIX, {
+        descendants: true
+      }]
+    }],
+    _suffixChildren: [{
+      type: ContentChildren,
+      args: [MAT_SUFFIX, {
+        descendants: true
+      }]
+    }],
+    _errorChildren: [{
+      type: ContentChildren,
+      args: [MAT_ERROR, {
+        descendants: true
+      }]
+    }],
+    _hintChildren: [{
+      type: ContentChildren,
+      args: [MatHint, {
+        descendants: true
+      }]
+    }],
+    _labelChild: [{
+      type: ContentChild,
+      args: [forwardRef(() => MatLabel), {
+        isSignal: true
+      }]
+    }],
+    hideRequiredMarker: [{
+      type: Input
+    }],
+    color: [{
+      type: Input
+    }],
+    floatLabel: [{
+      type: Input
+    }],
+    appearance: [{
+      type: Input
+    }],
+    subscriptSizing: [{
+      type: Input
+    }],
+    hintLabel: [{
+      type: Input
+    }]
+  });
+})();
+
+// node_modules/@angular/material/fesm2022/form-field.mjs
+var MatFormFieldModule = class _MatFormFieldModule {
+  static \u0275fac = function MatFormFieldModule_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _MatFormFieldModule)();
+  };
+  static \u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
+    type: _MatFormFieldModule,
+    imports: [ObserversModule, MatFormField, MatLabel, MatError, MatHint, MatPrefix, MatSuffix],
+    exports: [MatFormField, MatLabel, MatHint, MatError, MatPrefix, MatSuffix, BidiModule]
+  });
+  static \u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({
+    imports: [ObserversModule, MatFormField, BidiModule]
+  });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldModule, [{
+    type: NgModule,
+    args: [{
+      imports: [ObserversModule, MatFormField, MatLabel, MatError, MatHint, MatPrefix, MatSuffix],
+      exports: [MatFormField, MatLabel, MatHint, MatError, MatPrefix, MatSuffix, BidiModule]
+    }]
+  }], null, null);
 })();
 
 // node_modules/@angular/cdk/fesm2022/text-field.mjs
@@ -55047,1405 +55950,6 @@ var ReactiveFormsModule = class _ReactiveFormsModule {
 // node_modules/@angular/material/fesm2022/_input-value-accessor-chunk.mjs
 var MAT_INPUT_VALUE_ACCESSOR = new InjectionToken("MAT_INPUT_VALUE_ACCESSOR");
 
-// node_modules/@angular/cdk/fesm2022/observers-private.mjs
-var loopLimitExceededErrorHandler = (e) => {
-  if (e instanceof ErrorEvent && e.message === "ResizeObserver loop limit exceeded") {
-    console.error(`${e.message}. This could indicate a performance issue with your app. See https://github.com/WICG/resize-observer/blob/master/explainer.md#error-handling`);
-  }
-};
-var SingleBoxSharedResizeObserver = class {
-  _box;
-  _destroyed = new Subject();
-  _resizeSubject = new Subject();
-  _resizeObserver;
-  _elementObservables = /* @__PURE__ */ new Map();
-  constructor(_box) {
-    this._box = _box;
-    if (typeof ResizeObserver !== "undefined") {
-      this._resizeObserver = new ResizeObserver((entries) => this._resizeSubject.next(entries));
-    }
-  }
-  observe(target) {
-    if (!this._elementObservables.has(target)) {
-      this._elementObservables.set(target, new Observable((observer) => {
-        const subscription = this._resizeSubject.subscribe(observer);
-        this._resizeObserver?.observe(target, {
-          box: this._box
-        });
-        return () => {
-          this._resizeObserver?.unobserve(target);
-          subscription.unsubscribe();
-          this._elementObservables.delete(target);
-        };
-      }).pipe(filter((entries) => entries.some((entry) => entry.target === target)), shareReplay({
-        bufferSize: 1,
-        refCount: true
-      }), takeUntil(this._destroyed)));
-    }
-    return this._elementObservables.get(target);
-  }
-  destroy() {
-    this._destroyed.next();
-    this._destroyed.complete();
-    this._resizeSubject.complete();
-    this._elementObservables.clear();
-  }
-};
-var SharedResizeObserver = class _SharedResizeObserver {
-  _cleanupErrorListener;
-  _observers = /* @__PURE__ */ new Map();
-  _ngZone = inject2(NgZone);
-  constructor() {
-    if (typeof ResizeObserver !== "undefined" && (typeof ngDevMode === "undefined" || ngDevMode)) {
-      this._ngZone.runOutsideAngular(() => {
-        const renderer = inject2(RendererFactory2).createRenderer(null, null);
-        this._cleanupErrorListener = renderer.listen("window", "error", loopLimitExceededErrorHandler);
-      });
-    }
-  }
-  ngOnDestroy() {
-    for (const [, observer] of this._observers) {
-      observer.destroy();
-    }
-    this._observers.clear();
-    this._cleanupErrorListener?.();
-  }
-  observe(target, options) {
-    const box = options?.box || "content-box";
-    if (!this._observers.has(box)) {
-      this._observers.set(box, new SingleBoxSharedResizeObserver(box));
-    }
-    return this._observers.get(box).observe(target);
-  }
-  static \u0275fac = function SharedResizeObserver_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _SharedResizeObserver)();
-  };
-  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({
-    token: _SharedResizeObserver,
-    factory: _SharedResizeObserver.\u0275fac,
-    providedIn: "root"
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(SharedResizeObserver, [{
-    type: Injectable,
-    args: [{
-      providedIn: "root"
-    }]
-  }], () => [], null);
-})();
-
-// node_modules/@angular/material/fesm2022/_form-field-chunk.mjs
-var _c06 = ["notch"];
-var _c14 = ["matFormFieldNotchedOutline", ""];
-var _c23 = ["*"];
-var _c33 = ["iconPrefixContainer"];
-var _c43 = ["textPrefixContainer"];
-var _c52 = ["iconSuffixContainer"];
-var _c6 = ["textSuffixContainer"];
-var _c7 = ["textField"];
-var _c8 = ["*", [["mat-label"]], [["", "matPrefix", ""], ["", "matIconPrefix", ""]], [["", "matTextPrefix", ""]], [["", "matTextSuffix", ""]], [["", "matSuffix", ""], ["", "matIconSuffix", ""]], [["mat-error"], ["", "matError", ""]], [["mat-hint", 3, "align", "end"]], [["mat-hint", "align", "end"]]];
-var _c9 = ["*", "mat-label", "[matPrefix], [matIconPrefix]", "[matTextPrefix]", "[matTextSuffix]", "[matSuffix], [matIconSuffix]", "mat-error, [matError]", "mat-hint:not([align='end'])", "mat-hint[align='end']"];
-function MatFormField_ng_template_0_Conditional_0_Conditional_2_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275element(0, "span", 21);
-  }
-}
-function MatFormField_ng_template_0_Conditional_0_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "label", 20);
-    \u0275\u0275projection(1, 1);
-    \u0275\u0275conditionalCreate(2, MatFormField_ng_template_0_Conditional_0_Conditional_2_Template, 1, 0, "span", 21);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r1 = \u0275\u0275nextContext(2);
-    \u0275\u0275property("floating", ctx_r1._shouldLabelFloat())("monitorResize", ctx_r1._hasOutline())("id", ctx_r1._labelId);
-    \u0275\u0275attribute("for", ctx_r1._control.disableAutomaticLabeling ? null : ctx_r1._control.id);
-    \u0275\u0275advance(2);
-    \u0275\u0275conditional(!ctx_r1.hideRequiredMarker && ctx_r1._control.required ? 2 : -1);
-  }
-}
-function MatFormField_ng_template_0_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275conditionalCreate(0, MatFormField_ng_template_0_Conditional_0_Template, 3, 5, "label", 20);
-  }
-  if (rf & 2) {
-    const ctx_r1 = \u0275\u0275nextContext();
-    \u0275\u0275conditional(ctx_r1._hasFloatingLabel() ? 0 : -1);
-  }
-}
-function MatFormField_Conditional_4_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275element(0, "div", 7);
-  }
-}
-function MatFormField_Conditional_6_Conditional_1_ng_template_0_Template(rf, ctx) {
-}
-function MatFormField_Conditional_6_Conditional_1_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275template(0, MatFormField_Conditional_6_Conditional_1_ng_template_0_Template, 0, 0, "ng-template", 13);
-  }
-  if (rf & 2) {
-    \u0275\u0275nextContext(2);
-    const labelTemplate_r3 = \u0275\u0275reference(1);
-    \u0275\u0275property("ngTemplateOutlet", labelTemplate_r3);
-  }
-}
-function MatFormField_Conditional_6_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 9);
-    \u0275\u0275conditionalCreate(1, MatFormField_Conditional_6_Conditional_1_Template, 1, 1, null, 13);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r1 = \u0275\u0275nextContext();
-    \u0275\u0275property("matFormFieldNotchedOutlineOpen", ctx_r1._shouldLabelFloat());
-    \u0275\u0275advance();
-    \u0275\u0275conditional(!ctx_r1._forceDisplayInfixLabel() ? 1 : -1);
-  }
-}
-function MatFormField_Conditional_7_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 10, 2);
-    \u0275\u0275projection(2, 2);
-    \u0275\u0275elementEnd();
-  }
-}
-function MatFormField_Conditional_8_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 11, 3);
-    \u0275\u0275projection(2, 3);
-    \u0275\u0275elementEnd();
-  }
-}
-function MatFormField_Conditional_10_ng_template_0_Template(rf, ctx) {
-}
-function MatFormField_Conditional_10_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275template(0, MatFormField_Conditional_10_ng_template_0_Template, 0, 0, "ng-template", 13);
-  }
-  if (rf & 2) {
-    \u0275\u0275nextContext();
-    const labelTemplate_r3 = \u0275\u0275reference(1);
-    \u0275\u0275property("ngTemplateOutlet", labelTemplate_r3);
-  }
-}
-function MatFormField_Conditional_12_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 14, 4);
-    \u0275\u0275projection(2, 4);
-    \u0275\u0275elementEnd();
-  }
-}
-function MatFormField_Conditional_13_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 15, 5);
-    \u0275\u0275projection(2, 5);
-    \u0275\u0275elementEnd();
-  }
-}
-function MatFormField_Conditional_14_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275element(0, "div", 16);
-  }
-}
-function MatFormField_Case_16_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 18);
-    \u0275\u0275projection(1, 6);
-    \u0275\u0275elementEnd();
-  }
-}
-function MatFormField_Case_17_Conditional_1_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "mat-hint", 22);
-    \u0275\u0275text(1);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r1 = \u0275\u0275nextContext(2);
-    \u0275\u0275property("id", ctx_r1._hintLabelId);
-    \u0275\u0275advance();
-    \u0275\u0275textInterpolate(ctx_r1.hintLabel);
-  }
-}
-function MatFormField_Case_17_Template(rf, ctx) {
-  if (rf & 1) {
-    \u0275\u0275elementStart(0, "div", 19);
-    \u0275\u0275conditionalCreate(1, MatFormField_Case_17_Conditional_1_Template, 2, 2, "mat-hint", 22);
-    \u0275\u0275projection(2, 7);
-    \u0275\u0275element(3, "div", 23);
-    \u0275\u0275projection(4, 8);
-    \u0275\u0275elementEnd();
-  }
-  if (rf & 2) {
-    const ctx_r1 = \u0275\u0275nextContext();
-    \u0275\u0275advance();
-    \u0275\u0275conditional(ctx_r1.hintLabel ? 1 : -1);
-  }
-}
-var MatLabel = class _MatLabel {
-  static \u0275fac = function MatLabel_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatLabel)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatLabel,
-    selectors: [["mat-label"]]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatLabel, [{
-    type: Directive,
-    args: [{
-      selector: "mat-label"
-    }]
-  }], null, null);
-})();
-var MAT_ERROR = new InjectionToken("MatError");
-var MatError = class _MatError {
-  id = inject2(_IdGenerator).getId("mat-mdc-error-");
-  constructor() {
-  }
-  static \u0275fac = function MatError_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatError)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatError,
-    selectors: [["mat-error"], ["", "matError", ""]],
-    hostAttrs: [1, "mat-mdc-form-field-error", "mat-mdc-form-field-bottom-align"],
-    hostVars: 1,
-    hostBindings: function MatError_HostBindings(rf, ctx) {
-      if (rf & 2) {
-        \u0275\u0275domProperty("id", ctx.id);
-      }
-    },
-    inputs: {
-      id: "id"
-    },
-    features: [\u0275\u0275ProvidersFeature([{
-      provide: MAT_ERROR,
-      useExisting: _MatError
-    }])]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatError, [{
-    type: Directive,
-    args: [{
-      selector: "mat-error, [matError]",
-      host: {
-        "class": "mat-mdc-form-field-error mat-mdc-form-field-bottom-align",
-        "[id]": "id"
-      },
-      providers: [{
-        provide: MAT_ERROR,
-        useExisting: MatError
-      }]
-    }]
-  }], () => [], {
-    id: [{
-      type: Input
-    }]
-  });
-})();
-var MatHint = class _MatHint {
-  align = "start";
-  id = inject2(_IdGenerator).getId("mat-mdc-hint-");
-  static \u0275fac = function MatHint_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatHint)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatHint,
-    selectors: [["mat-hint"]],
-    hostAttrs: [1, "mat-mdc-form-field-hint", "mat-mdc-form-field-bottom-align"],
-    hostVars: 4,
-    hostBindings: function MatHint_HostBindings(rf, ctx) {
-      if (rf & 2) {
-        \u0275\u0275domProperty("id", ctx.id);
-        \u0275\u0275attribute("align", null);
-        \u0275\u0275classProp("mat-mdc-form-field-hint-end", ctx.align === "end");
-      }
-    },
-    inputs: {
-      align: "align",
-      id: "id"
-    }
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatHint, [{
-    type: Directive,
-    args: [{
-      selector: "mat-hint",
-      host: {
-        "class": "mat-mdc-form-field-hint mat-mdc-form-field-bottom-align",
-        "[class.mat-mdc-form-field-hint-end]": 'align === "end"',
-        "[id]": "id",
-        "[attr.align]": "null"
-      }
-    }]
-  }], null, {
-    align: [{
-      type: Input
-    }],
-    id: [{
-      type: Input
-    }]
-  });
-})();
-var MAT_PREFIX = new InjectionToken("MatPrefix");
-var MatPrefix = class _MatPrefix {
-  set _isTextSelector(value) {
-    this._isText = true;
-  }
-  _isText = false;
-  static \u0275fac = function MatPrefix_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatPrefix)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatPrefix,
-    selectors: [["", "matPrefix", ""], ["", "matIconPrefix", ""], ["", "matTextPrefix", ""]],
-    inputs: {
-      _isTextSelector: [0, "matTextPrefix", "_isTextSelector"]
-    },
-    features: [\u0275\u0275ProvidersFeature([{
-      provide: MAT_PREFIX,
-      useExisting: _MatPrefix
-    }])]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatPrefix, [{
-    type: Directive,
-    args: [{
-      selector: "[matPrefix], [matIconPrefix], [matTextPrefix]",
-      providers: [{
-        provide: MAT_PREFIX,
-        useExisting: MatPrefix
-      }]
-    }]
-  }], null, {
-    _isTextSelector: [{
-      type: Input,
-      args: ["matTextPrefix"]
-    }]
-  });
-})();
-var MAT_SUFFIX = new InjectionToken("MatSuffix");
-var MatSuffix = class _MatSuffix {
-  set _isTextSelector(value) {
-    this._isText = true;
-  }
-  _isText = false;
-  static \u0275fac = function MatSuffix_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatSuffix)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatSuffix,
-    selectors: [["", "matSuffix", ""], ["", "matIconSuffix", ""], ["", "matTextSuffix", ""]],
-    inputs: {
-      _isTextSelector: [0, "matTextSuffix", "_isTextSelector"]
-    },
-    features: [\u0275\u0275ProvidersFeature([{
-      provide: MAT_SUFFIX,
-      useExisting: _MatSuffix
-    }])]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatSuffix, [{
-    type: Directive,
-    args: [{
-      selector: "[matSuffix], [matIconSuffix], [matTextSuffix]",
-      providers: [{
-        provide: MAT_SUFFIX,
-        useExisting: MatSuffix
-      }]
-    }]
-  }], null, {
-    _isTextSelector: [{
-      type: Input,
-      args: ["matTextSuffix"]
-    }]
-  });
-})();
-var FLOATING_LABEL_PARENT = new InjectionToken("FloatingLabelParent");
-var MatFormFieldFloatingLabel = class _MatFormFieldFloatingLabel {
-  _elementRef = inject2(ElementRef);
-  get floating() {
-    return this._floating;
-  }
-  set floating(value) {
-    this._floating = value;
-    if (this.monitorResize) {
-      this._handleResize();
-    }
-  }
-  _floating = false;
-  get monitorResize() {
-    return this._monitorResize;
-  }
-  set monitorResize(value) {
-    this._monitorResize = value;
-    if (this._monitorResize) {
-      this._subscribeToResize();
-    } else {
-      this._resizeSubscription.unsubscribe();
-    }
-  }
-  _monitorResize = false;
-  _resizeObserver = inject2(SharedResizeObserver);
-  _ngZone = inject2(NgZone);
-  _parent = inject2(FLOATING_LABEL_PARENT);
-  _resizeSubscription = new Subscription();
-  constructor() {
-  }
-  ngOnDestroy() {
-    this._resizeSubscription.unsubscribe();
-  }
-  getWidth() {
-    return estimateScrollWidth(this._elementRef.nativeElement);
-  }
-  get element() {
-    return this._elementRef.nativeElement;
-  }
-  _handleResize() {
-    setTimeout(() => this._parent._handleLabelResized());
-  }
-  _subscribeToResize() {
-    this._resizeSubscription.unsubscribe();
-    this._ngZone.runOutsideAngular(() => {
-      this._resizeSubscription = this._resizeObserver.observe(this._elementRef.nativeElement, {
-        box: "border-box"
-      }).subscribe(() => this._handleResize());
-    });
-  }
-  static \u0275fac = function MatFormFieldFloatingLabel_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormFieldFloatingLabel)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatFormFieldFloatingLabel,
-    selectors: [["label", "matFormFieldFloatingLabel", ""]],
-    hostAttrs: [1, "mdc-floating-label", "mat-mdc-floating-label"],
-    hostVars: 2,
-    hostBindings: function MatFormFieldFloatingLabel_HostBindings(rf, ctx) {
-      if (rf & 2) {
-        \u0275\u0275classProp("mdc-floating-label--float-above", ctx.floating);
-      }
-    },
-    inputs: {
-      floating: "floating",
-      monitorResize: "monitorResize"
-    }
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldFloatingLabel, [{
-    type: Directive,
-    args: [{
-      selector: "label[matFormFieldFloatingLabel]",
-      host: {
-        "class": "mdc-floating-label mat-mdc-floating-label",
-        "[class.mdc-floating-label--float-above]": "floating"
-      }
-    }]
-  }], () => [], {
-    floating: [{
-      type: Input
-    }],
-    monitorResize: [{
-      type: Input
-    }]
-  });
-})();
-function estimateScrollWidth(element) {
-  const htmlEl = element;
-  if (htmlEl.offsetParent !== null) {
-    return htmlEl.scrollWidth;
-  }
-  const clone = htmlEl.cloneNode(true);
-  clone.style.setProperty("position", "absolute");
-  clone.style.setProperty("transform", "translate(-9999px, -9999px)");
-  document.documentElement.appendChild(clone);
-  const scrollWidth = clone.scrollWidth;
-  clone.remove();
-  return scrollWidth;
-}
-var ACTIVATE_CLASS = "mdc-line-ripple--active";
-var DEACTIVATING_CLASS = "mdc-line-ripple--deactivating";
-var MatFormFieldLineRipple = class _MatFormFieldLineRipple {
-  _elementRef = inject2(ElementRef);
-  _cleanupTransitionEnd;
-  constructor() {
-    const ngZone = inject2(NgZone);
-    const renderer = inject2(Renderer2);
-    ngZone.runOutsideAngular(() => {
-      this._cleanupTransitionEnd = renderer.listen(this._elementRef.nativeElement, "transitionend", this._handleTransitionEnd);
-    });
-  }
-  activate() {
-    const classList = this._elementRef.nativeElement.classList;
-    classList.remove(DEACTIVATING_CLASS);
-    classList.add(ACTIVATE_CLASS);
-  }
-  deactivate() {
-    this._elementRef.nativeElement.classList.add(DEACTIVATING_CLASS);
-  }
-  _handleTransitionEnd = (event) => {
-    const classList = this._elementRef.nativeElement.classList;
-    const isDeactivating = classList.contains(DEACTIVATING_CLASS);
-    if (event.propertyName === "opacity" && isDeactivating) {
-      classList.remove(ACTIVATE_CLASS, DEACTIVATING_CLASS);
-    }
-  };
-  ngOnDestroy() {
-    this._cleanupTransitionEnd();
-  }
-  static \u0275fac = function MatFormFieldLineRipple_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormFieldLineRipple)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatFormFieldLineRipple,
-    selectors: [["div", "matFormFieldLineRipple", ""]],
-    hostAttrs: [1, "mdc-line-ripple"]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldLineRipple, [{
-    type: Directive,
-    args: [{
-      selector: "div[matFormFieldLineRipple]",
-      host: {
-        "class": "mdc-line-ripple"
-      }
-    }]
-  }], () => [], null);
-})();
-var MatFormFieldNotchedOutline = class _MatFormFieldNotchedOutline {
-  _elementRef = inject2(ElementRef);
-  _ngZone = inject2(NgZone);
-  open = false;
-  _notch;
-  ngAfterViewInit() {
-    const element = this._elementRef.nativeElement;
-    const label = element.querySelector(".mdc-floating-label");
-    if (label) {
-      element.classList.add("mdc-notched-outline--upgraded");
-      if (typeof requestAnimationFrame === "function") {
-        label.style.transitionDuration = "0s";
-        this._ngZone.runOutsideAngular(() => {
-          requestAnimationFrame(() => label.style.transitionDuration = "");
-        });
-      }
-    } else {
-      element.classList.add("mdc-notched-outline--no-label");
-    }
-  }
-  _setNotchWidth(labelWidth) {
-    const notch = this._notch.nativeElement;
-    if (!this.open || !labelWidth) {
-      notch.style.width = "";
-    } else {
-      const NOTCH_ELEMENT_PADDING = 8;
-      const NOTCH_ELEMENT_BORDER = 1;
-      notch.style.width = `calc(${labelWidth}px * var(--mat-mdc-form-field-floating-label-scale, 0.75) + ${NOTCH_ELEMENT_PADDING + NOTCH_ELEMENT_BORDER}px)`;
-    }
-  }
-  _setMaxWidth(prefixAndSuffixWidth) {
-    this._notch.nativeElement.style.setProperty("--mat-form-field-notch-max-width", `calc(100% - ${prefixAndSuffixWidth}px)`);
-  }
-  static \u0275fac = function MatFormFieldNotchedOutline_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormFieldNotchedOutline)();
-  };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
-    type: _MatFormFieldNotchedOutline,
-    selectors: [["div", "matFormFieldNotchedOutline", ""]],
-    viewQuery: function MatFormFieldNotchedOutline_Query(rf, ctx) {
-      if (rf & 1) {
-        \u0275\u0275viewQuery(_c06, 5);
-      }
-      if (rf & 2) {
-        let _t;
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._notch = _t.first);
-      }
-    },
-    hostAttrs: [1, "mdc-notched-outline"],
-    hostVars: 2,
-    hostBindings: function MatFormFieldNotchedOutline_HostBindings(rf, ctx) {
-      if (rf & 2) {
-        \u0275\u0275classProp("mdc-notched-outline--notched", ctx.open);
-      }
-    },
-    inputs: {
-      open: [0, "matFormFieldNotchedOutlineOpen", "open"]
-    },
-    attrs: _c14,
-    ngContentSelectors: _c23,
-    decls: 5,
-    vars: 0,
-    consts: [["notch", ""], [1, "mat-mdc-notch-piece", "mdc-notched-outline__leading"], [1, "mat-mdc-notch-piece", "mdc-notched-outline__notch"], [1, "mat-mdc-notch-piece", "mdc-notched-outline__trailing"]],
-    template: function MatFormFieldNotchedOutline_Template(rf, ctx) {
-      if (rf & 1) {
-        \u0275\u0275projectionDef();
-        \u0275\u0275domElement(0, "div", 1);
-        \u0275\u0275domElementStart(1, "div", 2, 0);
-        \u0275\u0275projection(3);
-        \u0275\u0275domElementEnd();
-        \u0275\u0275domElement(4, "div", 3);
-      }
-    },
-    encapsulation: 2,
-    changeDetection: 0
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldNotchedOutline, [{
-    type: Component,
-    args: [{
-      selector: "div[matFormFieldNotchedOutline]",
-      host: {
-        "class": "mdc-notched-outline",
-        "[class.mdc-notched-outline--notched]": "open"
-      },
-      changeDetection: ChangeDetectionStrategy.OnPush,
-      encapsulation: ViewEncapsulation.None,
-      template: '<div class="mat-mdc-notch-piece mdc-notched-outline__leading"></div>\n<div class="mat-mdc-notch-piece mdc-notched-outline__notch" #notch>\n  <ng-content></ng-content>\n</div>\n<div class="mat-mdc-notch-piece mdc-notched-outline__trailing"></div>\n'
-    }]
-  }], null, {
-    open: [{
-      type: Input,
-      args: ["matFormFieldNotchedOutlineOpen"]
-    }],
-    _notch: [{
-      type: ViewChild,
-      args: ["notch"]
-    }]
-  });
-})();
-var MatFormFieldControl = class _MatFormFieldControl {
-  value;
-  stateChanges;
-  id;
-  placeholder;
-  ngControl;
-  focused;
-  empty;
-  shouldLabelFloat;
-  required;
-  disabled;
-  errorState;
-  controlType;
-  autofilled;
-  userAriaDescribedBy;
-  disableAutomaticLabeling;
-  describedByIds;
-  static \u0275fac = function MatFormFieldControl_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormFieldControl)();
-  };
-  static \u0275dir = /* @__PURE__ */ \u0275\u0275defineDirective({
-    type: _MatFormFieldControl
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldControl, [{
-    type: Directive
-  }], null, null);
-})();
-function getMatFormFieldDuplicatedHintError(align) {
-  return Error(`A hint was already declared for 'align="${align}"'.`);
-}
-function getMatFormFieldMissingControlError() {
-  return Error("mat-form-field must contain a MatFormFieldControl.");
-}
-var MAT_FORM_FIELD = new InjectionToken("MatFormField");
-var MAT_FORM_FIELD_DEFAULT_OPTIONS = new InjectionToken("MAT_FORM_FIELD_DEFAULT_OPTIONS");
-var DEFAULT_APPEARANCE = "fill";
-var DEFAULT_FLOAT_LABEL = "auto";
-var DEFAULT_SUBSCRIPT_SIZING = "fixed";
-var FLOATING_LABEL_DEFAULT_DOCKED_TRANSFORM = `translateY(-50%)`;
-var MatFormField = class _MatFormField {
-  _elementRef = inject2(ElementRef);
-  _changeDetectorRef = inject2(ChangeDetectorRef);
-  _platform = inject2(Platform);
-  _idGenerator = inject2(_IdGenerator);
-  _ngZone = inject2(NgZone);
-  _defaults = inject2(MAT_FORM_FIELD_DEFAULT_OPTIONS, {
-    optional: true
-  });
-  _currentDirection;
-  _textField;
-  _iconPrefixContainer;
-  _textPrefixContainer;
-  _iconSuffixContainer;
-  _textSuffixContainer;
-  _floatingLabel;
-  _notchedOutline;
-  _lineRipple;
-  _iconPrefixContainerSignal = viewChild("iconPrefixContainer", ...ngDevMode ? [{
-    debugName: "_iconPrefixContainerSignal"
-  }] : []);
-  _textPrefixContainerSignal = viewChild("textPrefixContainer", ...ngDevMode ? [{
-    debugName: "_textPrefixContainerSignal"
-  }] : []);
-  _iconSuffixContainerSignal = viewChild("iconSuffixContainer", ...ngDevMode ? [{
-    debugName: "_iconSuffixContainerSignal"
-  }] : []);
-  _textSuffixContainerSignal = viewChild("textSuffixContainer", ...ngDevMode ? [{
-    debugName: "_textSuffixContainerSignal"
-  }] : []);
-  _prefixSuffixContainers = computed(() => {
-    return [this._iconPrefixContainerSignal(), this._textPrefixContainerSignal(), this._iconSuffixContainerSignal(), this._textSuffixContainerSignal()].map((container) => container?.nativeElement).filter((e) => e !== void 0);
-  }, ...ngDevMode ? [{
-    debugName: "_prefixSuffixContainers"
-  }] : []);
-  _formFieldControl;
-  _prefixChildren;
-  _suffixChildren;
-  _errorChildren;
-  _hintChildren;
-  _labelChild = contentChild(MatLabel, ...ngDevMode ? [{
-    debugName: "_labelChild"
-  }] : []);
-  get hideRequiredMarker() {
-    return this._hideRequiredMarker;
-  }
-  set hideRequiredMarker(value) {
-    this._hideRequiredMarker = coerceBooleanProperty(value);
-  }
-  _hideRequiredMarker = false;
-  color = "primary";
-  get floatLabel() {
-    return this._floatLabel || this._defaults?.floatLabel || DEFAULT_FLOAT_LABEL;
-  }
-  set floatLabel(value) {
-    if (value !== this._floatLabel) {
-      this._floatLabel = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-  _floatLabel;
-  get appearance() {
-    return this._appearanceSignal();
-  }
-  set appearance(value) {
-    const newAppearance = value || this._defaults?.appearance || DEFAULT_APPEARANCE;
-    if (typeof ngDevMode === "undefined" || ngDevMode) {
-      if (newAppearance !== "fill" && newAppearance !== "outline") {
-        throw new Error(`MatFormField: Invalid appearance "${newAppearance}", valid values are "fill" or "outline".`);
-      }
-    }
-    this._appearanceSignal.set(newAppearance);
-  }
-  _appearanceSignal = signal(DEFAULT_APPEARANCE, ...ngDevMode ? [{
-    debugName: "_appearanceSignal"
-  }] : []);
-  get subscriptSizing() {
-    return this._subscriptSizing || this._defaults?.subscriptSizing || DEFAULT_SUBSCRIPT_SIZING;
-  }
-  set subscriptSizing(value) {
-    this._subscriptSizing = value || this._defaults?.subscriptSizing || DEFAULT_SUBSCRIPT_SIZING;
-  }
-  _subscriptSizing = null;
-  get hintLabel() {
-    return this._hintLabel;
-  }
-  set hintLabel(value) {
-    this._hintLabel = value;
-    this._processHints();
-  }
-  _hintLabel = "";
-  _hasIconPrefix = false;
-  _hasTextPrefix = false;
-  _hasIconSuffix = false;
-  _hasTextSuffix = false;
-  _labelId = this._idGenerator.getId("mat-mdc-form-field-label-");
-  _hintLabelId = this._idGenerator.getId("mat-mdc-hint-");
-  _describedByIds;
-  get _control() {
-    return this._explicitFormFieldControl || this._formFieldControl;
-  }
-  set _control(value) {
-    this._explicitFormFieldControl = value;
-  }
-  _destroyed = new Subject();
-  _isFocused = null;
-  _explicitFormFieldControl;
-  _previousControl = null;
-  _previousControlValidatorFn = null;
-  _stateChanges;
-  _valueChanges;
-  _describedByChanges;
-  _outlineLabelOffsetResizeObserver = null;
-  _animationsDisabled = _animationsDisabled();
-  constructor() {
-    const defaults2 = this._defaults;
-    const dir = inject2(Directionality);
-    if (defaults2) {
-      if (defaults2.appearance) {
-        this.appearance = defaults2.appearance;
-      }
-      this._hideRequiredMarker = Boolean(defaults2?.hideRequiredMarker);
-      if (defaults2.color) {
-        this.color = defaults2.color;
-      }
-    }
-    effect(() => this._currentDirection = dir.valueSignal());
-    this._syncOutlineLabelOffset();
-  }
-  ngAfterViewInit() {
-    this._updateFocusState();
-    if (!this._animationsDisabled) {
-      this._ngZone.runOutsideAngular(() => {
-        setTimeout(() => {
-          this._elementRef.nativeElement.classList.add("mat-form-field-animations-enabled");
-        }, 300);
-      });
-    }
-    this._changeDetectorRef.detectChanges();
-  }
-  ngAfterContentInit() {
-    this._assertFormFieldControl();
-    this._initializeSubscript();
-    this._initializePrefixAndSuffix();
-  }
-  ngAfterContentChecked() {
-    this._assertFormFieldControl();
-    if (this._control !== this._previousControl) {
-      this._initializeControl(this._previousControl);
-      if (this._control.ngControl && this._control.ngControl.control) {
-        this._previousControlValidatorFn = this._control.ngControl.control.validator;
-      }
-      this._previousControl = this._control;
-    }
-    if (this._control.ngControl && this._control.ngControl.control) {
-      const validatorFn = this._control.ngControl.control.validator;
-      if (validatorFn !== this._previousControlValidatorFn) {
-        this._changeDetectorRef.markForCheck();
-      }
-    }
-  }
-  ngOnDestroy() {
-    this._outlineLabelOffsetResizeObserver?.disconnect();
-    this._stateChanges?.unsubscribe();
-    this._valueChanges?.unsubscribe();
-    this._describedByChanges?.unsubscribe();
-    this._destroyed.next();
-    this._destroyed.complete();
-  }
-  getLabelId = computed(() => this._hasFloatingLabel() ? this._labelId : null, ...ngDevMode ? [{
-    debugName: "getLabelId"
-  }] : []);
-  getConnectedOverlayOrigin() {
-    return this._textField || this._elementRef;
-  }
-  _animateAndLockLabel() {
-    if (this._hasFloatingLabel()) {
-      this.floatLabel = "always";
-    }
-  }
-  _initializeControl(previousControl) {
-    const control = this._control;
-    const classPrefix = "mat-mdc-form-field-type-";
-    if (previousControl) {
-      this._elementRef.nativeElement.classList.remove(classPrefix + previousControl.controlType);
-    }
-    if (control.controlType) {
-      this._elementRef.nativeElement.classList.add(classPrefix + control.controlType);
-    }
-    this._stateChanges?.unsubscribe();
-    this._stateChanges = control.stateChanges.subscribe(() => {
-      this._updateFocusState();
-      this._changeDetectorRef.markForCheck();
-    });
-    this._describedByChanges?.unsubscribe();
-    this._describedByChanges = control.stateChanges.pipe(startWith([void 0, void 0]), map(() => [control.errorState, control.userAriaDescribedBy]), pairwise(), filter(([[prevErrorState, prevDescribedBy], [currentErrorState, currentDescribedBy]]) => {
-      return prevErrorState !== currentErrorState || prevDescribedBy !== currentDescribedBy;
-    })).subscribe(() => this._syncDescribedByIds());
-    this._valueChanges?.unsubscribe();
-    if (control.ngControl && control.ngControl.valueChanges) {
-      this._valueChanges = control.ngControl.valueChanges.pipe(takeUntil(this._destroyed)).subscribe(() => this._changeDetectorRef.markForCheck());
-    }
-  }
-  _checkPrefixAndSuffixTypes() {
-    this._hasIconPrefix = !!this._prefixChildren.find((p) => !p._isText);
-    this._hasTextPrefix = !!this._prefixChildren.find((p) => p._isText);
-    this._hasIconSuffix = !!this._suffixChildren.find((s) => !s._isText);
-    this._hasTextSuffix = !!this._suffixChildren.find((s) => s._isText);
-  }
-  _initializePrefixAndSuffix() {
-    this._checkPrefixAndSuffixTypes();
-    merge(this._prefixChildren.changes, this._suffixChildren.changes).subscribe(() => {
-      this._checkPrefixAndSuffixTypes();
-      this._changeDetectorRef.markForCheck();
-    });
-  }
-  _initializeSubscript() {
-    this._hintChildren.changes.subscribe(() => {
-      this._processHints();
-      this._changeDetectorRef.markForCheck();
-    });
-    this._errorChildren.changes.subscribe(() => {
-      this._syncDescribedByIds();
-      this._changeDetectorRef.markForCheck();
-    });
-    this._validateHints();
-    this._syncDescribedByIds();
-  }
-  _assertFormFieldControl() {
-    if (!this._control && (typeof ngDevMode === "undefined" || ngDevMode)) {
-      throw getMatFormFieldMissingControlError();
-    }
-  }
-  _updateFocusState() {
-    const controlFocused = this._control.focused;
-    if (controlFocused && !this._isFocused) {
-      this._isFocused = true;
-      this._lineRipple?.activate();
-    } else if (!controlFocused && (this._isFocused || this._isFocused === null)) {
-      this._isFocused = false;
-      this._lineRipple?.deactivate();
-    }
-    this._elementRef.nativeElement.classList.toggle("mat-focused", controlFocused);
-    this._textField?.nativeElement.classList.toggle("mdc-text-field--focused", controlFocused);
-  }
-  _syncOutlineLabelOffset() {
-    afterRenderEffect({
-      earlyRead: () => {
-        if (this._appearanceSignal() !== "outline") {
-          this._outlineLabelOffsetResizeObserver?.disconnect();
-          return null;
-        }
-        if (globalThis.ResizeObserver) {
-          this._outlineLabelOffsetResizeObserver ||= new globalThis.ResizeObserver(() => {
-            this._writeOutlinedLabelStyles(this._getOutlinedLabelOffset());
-          });
-          for (const el of this._prefixSuffixContainers()) {
-            this._outlineLabelOffsetResizeObserver.observe(el, {
-              box: "border-box"
-            });
-          }
-        }
-        return this._getOutlinedLabelOffset();
-      },
-      write: (labelStyles) => this._writeOutlinedLabelStyles(labelStyles())
-    });
-  }
-  _shouldAlwaysFloat() {
-    return this.floatLabel === "always";
-  }
-  _hasOutline() {
-    return this.appearance === "outline";
-  }
-  _forceDisplayInfixLabel() {
-    return !this._platform.isBrowser && this._prefixChildren.length && !this._shouldLabelFloat();
-  }
-  _hasFloatingLabel = computed(() => !!this._labelChild(), ...ngDevMode ? [{
-    debugName: "_hasFloatingLabel"
-  }] : []);
-  _shouldLabelFloat() {
-    if (!this._hasFloatingLabel()) {
-      return false;
-    }
-    return this._control.shouldLabelFloat || this._shouldAlwaysFloat();
-  }
-  _shouldForward(prop) {
-    const control = this._control ? this._control.ngControl : null;
-    return control && control[prop];
-  }
-  _getSubscriptMessageType() {
-    return this._errorChildren && this._errorChildren.length > 0 && this._control.errorState ? "error" : "hint";
-  }
-  _handleLabelResized() {
-    this._refreshOutlineNotchWidth();
-  }
-  _refreshOutlineNotchWidth() {
-    if (!this._hasOutline() || !this._floatingLabel || !this._shouldLabelFloat()) {
-      this._notchedOutline?._setNotchWidth(0);
-    } else {
-      this._notchedOutline?._setNotchWidth(this._floatingLabel.getWidth());
-    }
-  }
-  _processHints() {
-    this._validateHints();
-    this._syncDescribedByIds();
-  }
-  _validateHints() {
-    if (this._hintChildren && (typeof ngDevMode === "undefined" || ngDevMode)) {
-      let startHint;
-      let endHint;
-      this._hintChildren.forEach((hint) => {
-        if (hint.align === "start") {
-          if (startHint || this.hintLabel) {
-            throw getMatFormFieldDuplicatedHintError("start");
-          }
-          startHint = hint;
-        } else if (hint.align === "end") {
-          if (endHint) {
-            throw getMatFormFieldDuplicatedHintError("end");
-          }
-          endHint = hint;
-        }
-      });
-    }
-  }
-  _syncDescribedByIds() {
-    if (this._control) {
-      let ids = [];
-      if (this._control.userAriaDescribedBy && typeof this._control.userAriaDescribedBy === "string") {
-        ids.push(...this._control.userAriaDescribedBy.split(" "));
-      }
-      if (this._getSubscriptMessageType() === "hint") {
-        const startHint = this._hintChildren ? this._hintChildren.find((hint) => hint.align === "start") : null;
-        const endHint = this._hintChildren ? this._hintChildren.find((hint) => hint.align === "end") : null;
-        if (startHint) {
-          ids.push(startHint.id);
-        } else if (this._hintLabel) {
-          ids.push(this._hintLabelId);
-        }
-        if (endHint) {
-          ids.push(endHint.id);
-        }
-      } else if (this._errorChildren) {
-        ids.push(...this._errorChildren.map((error) => error.id));
-      }
-      const existingDescribedBy = this._control.describedByIds;
-      let toAssign;
-      if (existingDescribedBy) {
-        const exclude = this._describedByIds || ids;
-        toAssign = ids.concat(existingDescribedBy.filter((id) => id && !exclude.includes(id)));
-      } else {
-        toAssign = ids;
-      }
-      this._control.setDescribedByIds(toAssign);
-      this._describedByIds = ids;
-    }
-  }
-  _getOutlinedLabelOffset() {
-    if (!this._hasOutline() || !this._floatingLabel) {
-      return null;
-    }
-    if (!this._iconPrefixContainer && !this._textPrefixContainer) {
-      return ["", null];
-    }
-    if (!this._isAttachedToDom()) {
-      return null;
-    }
-    const iconPrefixContainer = this._iconPrefixContainer?.nativeElement;
-    const textPrefixContainer = this._textPrefixContainer?.nativeElement;
-    const iconSuffixContainer = this._iconSuffixContainer?.nativeElement;
-    const textSuffixContainer = this._textSuffixContainer?.nativeElement;
-    const iconPrefixContainerWidth = iconPrefixContainer?.getBoundingClientRect().width ?? 0;
-    const textPrefixContainerWidth = textPrefixContainer?.getBoundingClientRect().width ?? 0;
-    const iconSuffixContainerWidth = iconSuffixContainer?.getBoundingClientRect().width ?? 0;
-    const textSuffixContainerWidth = textSuffixContainer?.getBoundingClientRect().width ?? 0;
-    const negate = this._currentDirection === "rtl" ? "-1" : "1";
-    const prefixWidth = `${iconPrefixContainerWidth + textPrefixContainerWidth}px`;
-    const labelOffset = `var(--mat-mdc-form-field-label-offset-x, 0px)`;
-    const labelHorizontalOffset = `calc(${negate} * (${prefixWidth} + ${labelOffset}))`;
-    const floatingLabelTransform = `var(--mat-mdc-form-field-label-transform, ${FLOATING_LABEL_DEFAULT_DOCKED_TRANSFORM} translateX(${labelHorizontalOffset}))`;
-    const notchedOutlineWidth = iconPrefixContainerWidth + textPrefixContainerWidth + iconSuffixContainerWidth + textSuffixContainerWidth;
-    return [floatingLabelTransform, notchedOutlineWidth];
-  }
-  _writeOutlinedLabelStyles(styles) {
-    if (styles !== null) {
-      const [floatingLabelTransform, notchedOutlineWidth] = styles;
-      if (this._floatingLabel) {
-        this._floatingLabel.element.style.transform = floatingLabelTransform;
-      }
-      if (notchedOutlineWidth !== null) {
-        this._notchedOutline?._setMaxWidth(notchedOutlineWidth);
-      }
-    }
-  }
-  _isAttachedToDom() {
-    const element = this._elementRef.nativeElement;
-    if (element.getRootNode) {
-      const rootNode = element.getRootNode();
-      return rootNode && rootNode !== element;
-    }
-    return document.documentElement.contains(element);
-  }
-  static \u0275fac = function MatFormField_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormField)();
-  };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({
-    type: _MatFormField,
-    selectors: [["mat-form-field"]],
-    contentQueries: function MatFormField_ContentQueries(rf, ctx, dirIndex) {
-      if (rf & 1) {
-        \u0275\u0275contentQuerySignal(dirIndex, ctx._labelChild, MatLabel, 5);
-        \u0275\u0275contentQuery(dirIndex, MatFormFieldControl, 5)(dirIndex, MAT_PREFIX, 5)(dirIndex, MAT_SUFFIX, 5)(dirIndex, MAT_ERROR, 5)(dirIndex, MatHint, 5);
-      }
-      if (rf & 2) {
-        \u0275\u0275queryAdvance();
-        let _t;
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._formFieldControl = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._prefixChildren = _t);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._suffixChildren = _t);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._errorChildren = _t);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._hintChildren = _t);
-      }
-    },
-    viewQuery: function MatFormField_Query(rf, ctx) {
-      if (rf & 1) {
-        \u0275\u0275viewQuerySignal(ctx._iconPrefixContainerSignal, _c33, 5)(ctx._textPrefixContainerSignal, _c43, 5)(ctx._iconSuffixContainerSignal, _c52, 5)(ctx._textSuffixContainerSignal, _c6, 5);
-        \u0275\u0275viewQuery(_c7, 5)(_c33, 5)(_c43, 5)(_c52, 5)(_c6, 5)(MatFormFieldFloatingLabel, 5)(MatFormFieldNotchedOutline, 5)(MatFormFieldLineRipple, 5);
-      }
-      if (rf & 2) {
-        \u0275\u0275queryAdvance(4);
-        let _t;
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textField = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._iconPrefixContainer = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textPrefixContainer = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._iconSuffixContainer = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._textSuffixContainer = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._floatingLabel = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._notchedOutline = _t.first);
-        \u0275\u0275queryRefresh(_t = \u0275\u0275loadQuery()) && (ctx._lineRipple = _t.first);
-      }
-    },
-    hostAttrs: [1, "mat-mdc-form-field"],
-    hostVars: 38,
-    hostBindings: function MatFormField_HostBindings(rf, ctx) {
-      if (rf & 2) {
-        \u0275\u0275classProp("mat-mdc-form-field-label-always-float", ctx._shouldAlwaysFloat())("mat-mdc-form-field-has-icon-prefix", ctx._hasIconPrefix)("mat-mdc-form-field-has-icon-suffix", ctx._hasIconSuffix)("mat-form-field-invalid", ctx._control.errorState)("mat-form-field-disabled", ctx._control.disabled)("mat-form-field-autofilled", ctx._control.autofilled)("mat-form-field-appearance-fill", ctx.appearance == "fill")("mat-form-field-appearance-outline", ctx.appearance == "outline")("mat-form-field-hide-placeholder", ctx._hasFloatingLabel() && !ctx._shouldLabelFloat())("mat-primary", ctx.color !== "accent" && ctx.color !== "warn")("mat-accent", ctx.color === "accent")("mat-warn", ctx.color === "warn")("ng-untouched", ctx._shouldForward("untouched"))("ng-touched", ctx._shouldForward("touched"))("ng-pristine", ctx._shouldForward("pristine"))("ng-dirty", ctx._shouldForward("dirty"))("ng-valid", ctx._shouldForward("valid"))("ng-invalid", ctx._shouldForward("invalid"))("ng-pending", ctx._shouldForward("pending"));
-      }
-    },
-    inputs: {
-      hideRequiredMarker: "hideRequiredMarker",
-      color: "color",
-      floatLabel: "floatLabel",
-      appearance: "appearance",
-      subscriptSizing: "subscriptSizing",
-      hintLabel: "hintLabel"
-    },
-    exportAs: ["matFormField"],
-    features: [\u0275\u0275ProvidersFeature([{
-      provide: MAT_FORM_FIELD,
-      useExisting: _MatFormField
-    }, {
-      provide: FLOATING_LABEL_PARENT,
-      useExisting: _MatFormField
-    }])],
-    ngContentSelectors: _c9,
-    decls: 18,
-    vars: 21,
-    consts: [["labelTemplate", ""], ["textField", ""], ["iconPrefixContainer", ""], ["textPrefixContainer", ""], ["textSuffixContainer", ""], ["iconSuffixContainer", ""], [1, "mat-mdc-text-field-wrapper", "mdc-text-field", 3, "click"], [1, "mat-mdc-form-field-focus-overlay"], [1, "mat-mdc-form-field-flex"], ["matFormFieldNotchedOutline", "", 3, "matFormFieldNotchedOutlineOpen"], [1, "mat-mdc-form-field-icon-prefix"], [1, "mat-mdc-form-field-text-prefix"], [1, "mat-mdc-form-field-infix"], [3, "ngTemplateOutlet"], [1, "mat-mdc-form-field-text-suffix"], [1, "mat-mdc-form-field-icon-suffix"], ["matFormFieldLineRipple", ""], ["aria-atomic", "true", "aria-live", "polite", 1, "mat-mdc-form-field-subscript-wrapper", "mat-mdc-form-field-bottom-align"], [1, "mat-mdc-form-field-error-wrapper"], [1, "mat-mdc-form-field-hint-wrapper"], ["matFormFieldFloatingLabel", "", 3, "floating", "monitorResize", "id"], ["aria-hidden", "true", 1, "mat-mdc-form-field-required-marker", "mdc-floating-label--required"], [3, "id"], [1, "mat-mdc-form-field-hint-spacer"]],
-    template: function MatFormField_Template(rf, ctx) {
-      if (rf & 1) {
-        const _r1 = \u0275\u0275getCurrentView();
-        \u0275\u0275projectionDef(_c8);
-        \u0275\u0275template(0, MatFormField_ng_template_0_Template, 1, 1, "ng-template", null, 0, \u0275\u0275templateRefExtractor);
-        \u0275\u0275elementStart(2, "div", 6, 1);
-        \u0275\u0275listener("click", function MatFormField_Template_div_click_2_listener($event) {
-          \u0275\u0275restoreView(_r1);
-          return \u0275\u0275resetView(ctx._control.onContainerClick($event));
-        });
-        \u0275\u0275conditionalCreate(4, MatFormField_Conditional_4_Template, 1, 0, "div", 7);
-        \u0275\u0275elementStart(5, "div", 8);
-        \u0275\u0275conditionalCreate(6, MatFormField_Conditional_6_Template, 2, 2, "div", 9);
-        \u0275\u0275conditionalCreate(7, MatFormField_Conditional_7_Template, 3, 0, "div", 10);
-        \u0275\u0275conditionalCreate(8, MatFormField_Conditional_8_Template, 3, 0, "div", 11);
-        \u0275\u0275elementStart(9, "div", 12);
-        \u0275\u0275conditionalCreate(10, MatFormField_Conditional_10_Template, 1, 1, null, 13);
-        \u0275\u0275projection(11);
-        \u0275\u0275elementEnd();
-        \u0275\u0275conditionalCreate(12, MatFormField_Conditional_12_Template, 3, 0, "div", 14);
-        \u0275\u0275conditionalCreate(13, MatFormField_Conditional_13_Template, 3, 0, "div", 15);
-        \u0275\u0275elementEnd();
-        \u0275\u0275conditionalCreate(14, MatFormField_Conditional_14_Template, 1, 0, "div", 16);
-        \u0275\u0275elementEnd();
-        \u0275\u0275elementStart(15, "div", 17);
-        \u0275\u0275conditionalCreate(16, MatFormField_Case_16_Template, 2, 0, "div", 18)(17, MatFormField_Case_17_Template, 5, 1, "div", 19);
-        \u0275\u0275elementEnd();
-      }
-      if (rf & 2) {
-        let tmp_17_0;
-        \u0275\u0275advance(2);
-        \u0275\u0275classProp("mdc-text-field--filled", !ctx._hasOutline())("mdc-text-field--outlined", ctx._hasOutline())("mdc-text-field--no-label", !ctx._hasFloatingLabel())("mdc-text-field--disabled", ctx._control.disabled)("mdc-text-field--invalid", ctx._control.errorState);
-        \u0275\u0275advance(2);
-        \u0275\u0275conditional(!ctx._hasOutline() && !ctx._control.disabled ? 4 : -1);
-        \u0275\u0275advance(2);
-        \u0275\u0275conditional(ctx._hasOutline() ? 6 : -1);
-        \u0275\u0275advance();
-        \u0275\u0275conditional(ctx._hasIconPrefix ? 7 : -1);
-        \u0275\u0275advance();
-        \u0275\u0275conditional(ctx._hasTextPrefix ? 8 : -1);
-        \u0275\u0275advance(2);
-        \u0275\u0275conditional(!ctx._hasOutline() || ctx._forceDisplayInfixLabel() ? 10 : -1);
-        \u0275\u0275advance(2);
-        \u0275\u0275conditional(ctx._hasTextSuffix ? 12 : -1);
-        \u0275\u0275advance();
-        \u0275\u0275conditional(ctx._hasIconSuffix ? 13 : -1);
-        \u0275\u0275advance();
-        \u0275\u0275conditional(!ctx._hasOutline() ? 14 : -1);
-        \u0275\u0275advance();
-        \u0275\u0275classProp("mat-mdc-form-field-subscript-dynamic-size", ctx.subscriptSizing === "dynamic");
-        const subscriptMessageType_r4 = ctx._getSubscriptMessageType();
-        \u0275\u0275advance();
-        \u0275\u0275conditional((tmp_17_0 = subscriptMessageType_r4) === "error" ? 16 : tmp_17_0 === "hint" ? 17 : -1);
-      }
-    },
-    dependencies: [MatFormFieldFloatingLabel, MatFormFieldNotchedOutline, NgTemplateOutlet, MatFormFieldLineRipple, MatHint],
-    styles: ['.mdc-text-field{display:inline-flex;align-items:baseline;padding:0 16px;position:relative;box-sizing:border-box;overflow:hidden;will-change:opacity,transform,color;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.mdc-text-field__input{width:100%;min-width:0;border:none;border-radius:0;background:none;padding:0;-moz-appearance:none;-webkit-appearance:none;height:28px}.mdc-text-field__input::-webkit-calendar-picker-indicator,.mdc-text-field__input::-webkit-search-cancel-button{display:none}.mdc-text-field__input::-ms-clear{display:none}.mdc-text-field__input:focus{outline:none}.mdc-text-field__input:invalid{box-shadow:none}.mdc-text-field__input::placeholder{opacity:0}.mdc-text-field__input::-moz-placeholder{opacity:0}.mdc-text-field__input::-webkit-input-placeholder{opacity:0}.mdc-text-field__input:-ms-input-placeholder{opacity:0}.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mdc-text-field--focused .mdc-text-field__input::placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{opacity:1}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-moz-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-webkit-input-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive:-ms-input-placeholder{opacity:0}.mdc-text-field--outlined .mdc-text-field__input,.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{height:100%}.mdc-text-field--outlined .mdc-text-field__input{display:flex;border:none !important;background-color:rgba(0,0,0,0)}.mdc-text-field--disabled .mdc-text-field__input{pointer-events:auto}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-filled-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-filled-caret-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-outlined-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-outlined-caret-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-filled-error-caret-color, var(--mat-sys-error))}.mdc-text-field--outlined.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-outlined-error-caret-color, var(--mat-sys-error))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-filled-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}@media(forced-colors: active){.mdc-text-field--disabled .mdc-text-field__input{background-color:Window}}.mdc-text-field--filled{height:56px;border-bottom-right-radius:0;border-bottom-left-radius:0;border-top-left-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small));border-top-right-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--filled:not(.mdc-text-field--disabled){background-color:var(--mat-form-field-filled-container-color, var(--mat-sys-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled{background-color:var(--mat-form-field-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent))}.mdc-text-field--outlined{height:56px;overflow:visible;padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)));padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px)}[dir=rtl] .mdc-text-field--outlined{padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px);padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}.mdc-floating-label{position:absolute;left:0;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform}[dir=rtl] .mdc-floating-label{right:0;left:auto;transform-origin:right top;text-align:right}.mdc-text-field .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-text-field--outlined .mdc-floating-label{left:4px;right:auto}[dir=rtl] .mdc-text-field--outlined .mdc-floating-label{left:auto;right:4px}.mdc-text-field--filled .mdc-floating-label{left:16px;right:auto}[dir=rtl] .mdc-text-field--filled .mdc-floating-label{left:auto;right:16px}.mdc-text-field--disabled .mdc-floating-label{cursor:default}@media(forced-colors: active){.mdc-text-field--disabled .mdc-floating-label{z-index:1}}.mdc-text-field--filled.mdc-text-field--no-label .mdc-floating-label{display:none}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-filled-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-filled-hover-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-filled-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-filled-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-filled-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--filled .mdc-floating-label{font-family:var(--mat-form-field-filled-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-filled-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-filled-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-filled-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-outlined-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-outlined-hover-label-text-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-outlined-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-outlined-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-outlined-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined .mdc-floating-label{font-family:var(--mat-form-field-outlined-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-outlined-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-outlined-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-outlined-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-floating-label--float-above{cursor:auto;transform:translateY(-106%) scale(0.75)}.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1);font-size:.75rem}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:133.3333333333%}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:1px;margin-right:0;content:"*"}[dir=rtl] .mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:0;margin-right:1px}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline{text-align:right}.mdc-text-field--outlined .mdc-notched-outline{z-index:1}.mat-mdc-notch-piece{box-sizing:border-box;height:100%;pointer-events:none;border:none;border-top:1px solid;border-bottom:1px solid}.mdc-text-field--focused .mat-mdc-notch-piece{border-width:2px}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-outline-color, var(--mat-sys-outline));border-width:var(--mat-form-field-outlined-outline-width, 1px)}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-hover-outline-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-focus-outline-color, var(--mat-sys-primary))}.mdc-text-field--outlined.mdc-text-field--disabled .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-disabled-outline-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-notched-outline .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-hover-outline-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-focus-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline .mat-mdc-notch-piece{border-width:var(--mat-form-field-outlined-focus-outline-width, 2px)}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}[dir=rtl] .mdc-notched-outline__leading{border-left:none;border-right:1px solid;border-bottom-left-radius:0;border-top-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__trailing{flex-grow:1;border-left:none;border-right:1px solid;border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}[dir=rtl] .mdc-notched-outline__trailing{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__notch{flex:0 0 auto;width:auto}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:min(var(--mat-form-field-notch-max-width, 100%),calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{max-width:min(100%,calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-text-field--focused.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{z-index:1;border-bottom-width:var(--mat-form-field-filled-active-indicator-height, 1px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-active-indicator-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-hover-active-indicator-color, var(--mat-sys-on-surface))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-disabled-active-indicator-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-active-indicator-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-hover-active-indicator-color, var(--mat-sys-on-error-container))}.mdc-line-ripple::after{transform:scaleX(0);opacity:0;z-index:2}.mdc-text-field--filled .mdc-line-ripple::after{border-bottom-width:var(--mat-form-field-filled-focus-active-indicator-height, 2px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-focus-active-indicator-color, var(--mat-sys-primary))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-error-focus-active-indicator-color, var(--mat-sys-error))}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-text-field--disabled{pointer-events:none}.mat-mdc-form-field-textarea-control{vertical-align:middle;resize:vertical;box-sizing:border-box;height:auto;margin:0;padding:0;border:none;overflow:auto}.mat-mdc-form-field-input-control.mat-mdc-form-field-input-control{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font:inherit;letter-spacing:inherit;text-decoration:inherit;text-transform:inherit;border:none}.mat-mdc-form-field .mat-mdc-floating-label.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;line-height:normal;pointer-events:all;will-change:auto}.mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label{cursor:inherit}.mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input,.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{height:auto}.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control.mdc-text-field__input[type=color]{height:23px}.mat-mdc-text-field-wrapper{height:auto;flex:auto;will-change:auto}.mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-left:0;--mat-mdc-form-field-label-offset-x: -16px}.mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-right:0}[dir=rtl] .mat-mdc-text-field-wrapper{padding-left:16px;padding-right:16px}[dir=rtl] .mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-left:0}[dir=rtl] .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-right:0}.mat-form-field-disabled .mdc-text-field__input::placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-label-always-float .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}.mat-mdc-text-field-wrapper .mat-mdc-form-field-infix .mat-mdc-floating-label{left:auto;right:auto}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-text-field__input{display:inline-block}.mat-mdc-form-field .mat-mdc-text-field-wrapper.mdc-text-field .mdc-notched-outline__notch{padding-top:0}.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:1px solid rgba(0,0,0,0)}[dir=rtl] .mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:none;border-right:1px solid rgba(0,0,0,0)}.mat-mdc-form-field-infix{min-height:var(--mat-form-field-container-height, 56px);padding-top:var(--mat-form-field-filled-with-label-container-padding-top, 24px);padding-bottom:var(--mat-form-field-filled-with-label-container-padding-bottom, 8px)}.mdc-text-field--outlined .mat-mdc-form-field-infix,.mdc-text-field--no-label .mat-mdc-form-field-infix{padding-top:var(--mat-form-field-container-vertical-padding, 16px);padding-bottom:var(--mat-form-field-container-vertical-padding, 16px)}.mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-floating-label{top:calc(var(--mat-form-field-container-height, 56px)/2)}.mdc-text-field--filled .mat-mdc-floating-label{display:var(--mat-form-field-filled-label-display, block)}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{--mat-mdc-form-field-label-transform: translateY(calc(calc(6.75px + var(--mat-form-field-container-height, 56px) / 2) * -1)) scale(var(--mat-mdc-form-field-floating-label-scale, 0.75));transform:var(--mat-mdc-form-field-label-transform)}@keyframes _mat-form-field-subscript-animation{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}.mat-mdc-form-field-subscript-wrapper{box-sizing:border-box;width:100%;position:relative}.mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-error-wrapper{position:absolute;top:0;left:0;right:0;padding:0 16px;opacity:1;transform:translateY(0);animation:_mat-form-field-subscript-animation 0ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-error-wrapper{position:static}.mat-mdc-form-field-bottom-align::before{content:"";display:inline-block;height:16px}.mat-mdc-form-field-bottom-align.mat-mdc-form-field-subscript-dynamic-size::before{content:unset}.mat-mdc-form-field-hint-end{order:1}.mat-mdc-form-field-hint-wrapper{display:flex}.mat-mdc-form-field-hint-spacer{flex:1 0 1em}.mat-mdc-form-field-error{display:block;color:var(--mat-form-field-error-text-color, var(--mat-sys-error))}.mat-mdc-form-field-subscript-wrapper,.mat-mdc-form-field-bottom-align::before{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-subscript-text-font, var(--mat-sys-body-small-font));line-height:var(--mat-form-field-subscript-text-line-height, var(--mat-sys-body-small-line-height));font-size:var(--mat-form-field-subscript-text-size, var(--mat-sys-body-small-size));letter-spacing:var(--mat-form-field-subscript-text-tracking, var(--mat-sys-body-small-tracking));font-weight:var(--mat-form-field-subscript-text-weight, var(--mat-sys-body-small-weight))}.mat-mdc-form-field-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;opacity:0;pointer-events:none;background-color:var(--mat-form-field-state-layer-color, var(--mat-sys-on-surface))}.mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-hover-state-layer-opacity, var(--mat-sys-hover-state-layer-opacity))}.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-focus-state-layer-opacity, 0)}select.mat-mdc-form-field-input-control{-moz-appearance:none;-webkit-appearance:none;background-color:rgba(0,0,0,0);display:inline-flex;box-sizing:border-box}select.mat-mdc-form-field-input-control:not(:disabled){cursor:pointer}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option{color:var(--mat-form-field-select-option-text-color, var(--mat-sys-neutral10))}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option:disabled{color:var(--mat-form-field-select-disabled-option-text-color, color-mix(in srgb, var(--mat-sys-neutral10) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{content:"";width:0;height:0;border-left:5px solid rgba(0,0,0,0);border-right:5px solid rgba(0,0,0,0);border-top:5px solid;position:absolute;right:0;top:50%;margin-top:-2.5px;pointer-events:none;color:var(--mat-form-field-enabled-select-arrow-color, var(--mat-sys-on-surface-variant))}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{right:auto;left:0}.mat-mdc-form-field-type-mat-native-select.mat-focused .mat-mdc-form-field-infix::after{color:var(--mat-form-field-focus-select-arrow-color, var(--mat-sys-primary))}.mat-mdc-form-field-type-mat-native-select.mat-form-field-disabled .mat-mdc-form-field-infix::after{color:var(--mat-form-field-disabled-select-arrow-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:15px}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:0;padding-left:15px}@media(forced-colors: active){.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper{outline:solid 1px}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-form-field-disabled .mat-mdc-text-field-wrapper{outline-color:GrayText}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-focused .mat-mdc-text-field-wrapper{outline:dashed 3px}}@media(forced-colors: active){.mat-mdc-form-field.mat-focused .mdc-notched-outline{border:dashed 3px}}.mat-mdc-form-field-input-control[type=date],.mat-mdc-form-field-input-control[type=datetime],.mat-mdc-form-field-input-control[type=datetime-local],.mat-mdc-form-field-input-control[type=month],.mat-mdc-form-field-input-control[type=week],.mat-mdc-form-field-input-control[type=time]{line-height:1}.mat-mdc-form-field-input-control::-webkit-datetime-edit{line-height:1;padding:0;margin-bottom:-2px}.mat-mdc-form-field{--mat-mdc-form-field-floating-label-scale: 0.75;display:inline-flex;flex-direction:column;min-width:0;text-align:left;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-container-text-font, var(--mat-sys-body-large-font));line-height:var(--mat-form-field-container-text-line-height, var(--mat-sys-body-large-line-height));font-size:var(--mat-form-field-container-text-size, var(--mat-sys-body-large-size));letter-spacing:var(--mat-form-field-container-text-tracking, var(--mat-sys-body-large-tracking));font-weight:var(--mat-form-field-container-text-weight, var(--mat-sys-body-large-weight))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-floating-label--float-above{font-size:calc(var(--mat-form-field-outlined-label-text-populated-size)*var(--mat-mdc-form-field-floating-label-scale))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:var(--mat-form-field-outlined-label-text-populated-size)}[dir=rtl] .mat-mdc-form-field{text-align:right}.mat-mdc-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-mdc-text-field-wrapper{width:100%;z-index:0}.mat-mdc-form-field-icon-prefix,.mat-mdc-form-field-icon-suffix{align-self:center;line-height:0;pointer-events:auto;position:relative;z-index:1}.mat-mdc-form-field-icon-prefix>.mat-icon,.mat-mdc-form-field-icon-suffix>.mat-icon{padding:0 12px;box-sizing:content-box}.mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-leading-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-disabled-leading-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-trailing-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-disabled-trailing-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-invalid .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-trailing-icon-color, var(--mat-sys-error))}.mat-form-field-invalid:not(.mat-focused):not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-hover-trailing-icon-color, var(--mat-sys-on-error-container))}.mat-form-field-invalid.mat-focused .mat-mdc-text-field-wrapper .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-focus-trailing-icon-color, var(--mat-sys-error))}.mat-mdc-form-field-icon-prefix,[dir=rtl] .mat-mdc-form-field-icon-suffix{padding:0 4px 0 0}.mat-mdc-form-field-icon-suffix,[dir=rtl] .mat-mdc-form-field-icon-prefix{padding:0 0 0 4px}.mat-mdc-form-field-subscript-wrapper .mat-icon,.mat-mdc-form-field label .mat-icon{width:1em;height:1em;font-size:inherit}.mat-mdc-form-field-infix{flex:auto;min-width:0;width:180px;position:relative;box-sizing:border-box}.mat-mdc-form-field-infix:has(textarea[cols]){width:auto}.mat-mdc-form-field .mdc-notched-outline__notch{margin-left:-1px;-webkit-clip-path:inset(-9em -999em -9em 1px);clip-path:inset(-9em -999em -9em 1px)}[dir=rtl] .mat-mdc-form-field .mdc-notched-outline__notch{margin-left:0;margin-right:-1px;-webkit-clip-path:inset(-9em 1px -9em -999em);clip-path:inset(-9em 1px -9em -999em)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-floating-label{transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input{transition:opacity 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-moz-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-webkit-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input:-ms-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field--filled:not(.mdc-ripple-upgraded):focus .mdc-text-field__ripple::before{transition-duration:75ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-error-wrapper{animation-duration:300ms}.mdc-notched-outline .mdc-floating-label{max-width:calc(100% + 1px)}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(133.3333333333% + 1px)}\n'],
-    encapsulation: 2,
-    changeDetection: 0
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormField, [{
-    type: Component,
-    args: [{
-      selector: "mat-form-field",
-      exportAs: "matFormField",
-      host: {
-        "class": "mat-mdc-form-field",
-        "[class.mat-mdc-form-field-label-always-float]": "_shouldAlwaysFloat()",
-        "[class.mat-mdc-form-field-has-icon-prefix]": "_hasIconPrefix",
-        "[class.mat-mdc-form-field-has-icon-suffix]": "_hasIconSuffix",
-        "[class.mat-form-field-invalid]": "_control.errorState",
-        "[class.mat-form-field-disabled]": "_control.disabled",
-        "[class.mat-form-field-autofilled]": "_control.autofilled",
-        "[class.mat-form-field-appearance-fill]": 'appearance == "fill"',
-        "[class.mat-form-field-appearance-outline]": 'appearance == "outline"',
-        "[class.mat-form-field-hide-placeholder]": "_hasFloatingLabel() && !_shouldLabelFloat()",
-        "[class.mat-primary]": 'color !== "accent" && color !== "warn"',
-        "[class.mat-accent]": 'color === "accent"',
-        "[class.mat-warn]": 'color === "warn"',
-        "[class.ng-untouched]": '_shouldForward("untouched")',
-        "[class.ng-touched]": '_shouldForward("touched")',
-        "[class.ng-pristine]": '_shouldForward("pristine")',
-        "[class.ng-dirty]": '_shouldForward("dirty")',
-        "[class.ng-valid]": '_shouldForward("valid")',
-        "[class.ng-invalid]": '_shouldForward("invalid")',
-        "[class.ng-pending]": '_shouldForward("pending")'
-      },
-      encapsulation: ViewEncapsulation.None,
-      changeDetection: ChangeDetectionStrategy.OnPush,
-      providers: [{
-        provide: MAT_FORM_FIELD,
-        useExisting: MatFormField
-      }, {
-        provide: FLOATING_LABEL_PARENT,
-        useExisting: MatFormField
-      }],
-      imports: [MatFormFieldFloatingLabel, MatFormFieldNotchedOutline, NgTemplateOutlet, MatFormFieldLineRipple, MatHint],
-      template: '<ng-template #labelTemplate>\n  <!--\n    MDC recommends that the text-field is a `<label>` element. This rather complicates the\n    setup because it would require every form-field control to explicitly set `aria-labelledby`.\n    This is because the `<label>` itself contains more than the actual label (e.g. prefix, suffix\n    or other projected content), and screen readers could potentially read out undesired content.\n    Excluding elements from being printed out requires them to be marked with `aria-hidden`, or\n    the form control is set to a scoped element for the label (using `aria-labelledby`). Both of\n    these options seem to complicate the setup because we know exactly what content is rendered\n    as part of the label, and we don\'t want to spend resources on walking through projected content\n    to set `aria-hidden`. Nor do we want to set `aria-labelledby` on every form control if we could\n    simply link the label to the control using the label `for` attribute.\n  -->\n  @if (_hasFloatingLabel()) {\n    <label\n      matFormFieldFloatingLabel\n      [floating]="_shouldLabelFloat()"\n      [monitorResize]="_hasOutline()"\n      [id]="_labelId"\n      [attr.for]="_control.disableAutomaticLabeling ? null : _control.id"\n    >\n      <ng-content select="mat-label"></ng-content>\n      <!--\n        We set the required marker as a separate element, in order to make it easier to target if\n        apps want to override it and to be able to set `aria-hidden` so that screen readers don\'t\n        pick it up.\n       -->\n      @if (!hideRequiredMarker && _control.required) {\n        <span\n          aria-hidden="true"\n          class="mat-mdc-form-field-required-marker mdc-floating-label--required"\n        ></span>\n      }\n    </label>\n  }\n</ng-template>\n\n<div\n  class="mat-mdc-text-field-wrapper mdc-text-field"\n  #textField\n  [class.mdc-text-field--filled]="!_hasOutline()"\n  [class.mdc-text-field--outlined]="_hasOutline()"\n  [class.mdc-text-field--no-label]="!_hasFloatingLabel()"\n  [class.mdc-text-field--disabled]="_control.disabled"\n  [class.mdc-text-field--invalid]="_control.errorState"\n  (click)="_control.onContainerClick($event)"\n>\n  @if (!_hasOutline() && !_control.disabled) {\n    <div class="mat-mdc-form-field-focus-overlay"></div>\n  }\n  <div class="mat-mdc-form-field-flex">\n    @if (_hasOutline()) {\n      <div matFormFieldNotchedOutline [matFormFieldNotchedOutlineOpen]="_shouldLabelFloat()">\n        @if (!_forceDisplayInfixLabel()) {\n          <ng-template [ngTemplateOutlet]="labelTemplate"></ng-template>\n        }\n      </div>\n    }\n\n    @if (_hasIconPrefix) {\n      <div class="mat-mdc-form-field-icon-prefix" #iconPrefixContainer>\n        <ng-content select="[matPrefix], [matIconPrefix]"></ng-content>\n      </div>\n    }\n\n    @if (_hasTextPrefix) {\n      <div class="mat-mdc-form-field-text-prefix" #textPrefixContainer>\n        <ng-content select="[matTextPrefix]"></ng-content>\n      </div>\n    }\n\n    <div class="mat-mdc-form-field-infix">\n      @if (!_hasOutline() || _forceDisplayInfixLabel()) {\n        <ng-template [ngTemplateOutlet]="labelTemplate"></ng-template>\n      }\n\n      <ng-content></ng-content>\n    </div>\n\n    @if (_hasTextSuffix) {\n      <div class="mat-mdc-form-field-text-suffix" #textSuffixContainer>\n        <ng-content select="[matTextSuffix]"></ng-content>\n      </div>\n    }\n\n    @if (_hasIconSuffix) {\n      <div class="mat-mdc-form-field-icon-suffix" #iconSuffixContainer>\n        <ng-content select="[matSuffix], [matIconSuffix]"></ng-content>\n      </div>\n    }\n  </div>\n\n  @if (!_hasOutline()) {\n    <div matFormFieldLineRipple></div>\n  }\n</div>\n\n<div aria-atomic="true" aria-live="polite"\n  class="mat-mdc-form-field-subscript-wrapper mat-mdc-form-field-bottom-align"\n  [class.mat-mdc-form-field-subscript-dynamic-size]="subscriptSizing === \'dynamic\'"\n>\n  @let subscriptMessageType = _getSubscriptMessageType();\n\n  @switch (subscriptMessageType) {\n    @case (\'error\') {\n      <div class="mat-mdc-form-field-error-wrapper">\n        <ng-content select="mat-error, [matError]"></ng-content>\n      </div>\n    }\n\n    @case (\'hint\') {\n      <div class="mat-mdc-form-field-hint-wrapper">\n        @if (hintLabel) {\n          <mat-hint [id]="_hintLabelId">{{hintLabel}}</mat-hint>\n        }\n        <ng-content select="mat-hint:not([align=\'end\'])"></ng-content>\n        <div class="mat-mdc-form-field-hint-spacer"></div>\n        <ng-content select="mat-hint[align=\'end\']"></ng-content>\n      </div>\n    }\n  }\n</div>\n',
-      styles: ['.mdc-text-field{display:inline-flex;align-items:baseline;padding:0 16px;position:relative;box-sizing:border-box;overflow:hidden;will-change:opacity,transform,color;border-top-left-radius:4px;border-top-right-radius:4px;border-bottom-right-radius:0;border-bottom-left-radius:0}.mdc-text-field__input{width:100%;min-width:0;border:none;border-radius:0;background:none;padding:0;-moz-appearance:none;-webkit-appearance:none;height:28px}.mdc-text-field__input::-webkit-calendar-picker-indicator,.mdc-text-field__input::-webkit-search-cancel-button{display:none}.mdc-text-field__input::-ms-clear{display:none}.mdc-text-field__input:focus{outline:none}.mdc-text-field__input:invalid{box-shadow:none}.mdc-text-field__input::placeholder{opacity:0}.mdc-text-field__input::-moz-placeholder{opacity:0}.mdc-text-field__input::-webkit-input-placeholder{opacity:0}.mdc-text-field__input:-ms-input-placeholder{opacity:0}.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mdc-text-field--focused .mdc-text-field__input::placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{opacity:1}.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{opacity:1}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-moz-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive::-webkit-input-placeholder{opacity:0}.mdc-text-field--disabled:not(.mdc-text-field--no-label) .mdc-text-field__input.mat-mdc-input-disabled-interactive:-ms-input-placeholder{opacity:0}.mdc-text-field--outlined .mdc-text-field__input,.mdc-text-field--filled.mdc-text-field--no-label .mdc-text-field__input{height:100%}.mdc-text-field--outlined .mdc-text-field__input{display:flex;border:none !important;background-color:rgba(0,0,0,0)}.mdc-text-field--disabled .mdc-text-field__input{pointer-events:auto}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-filled-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-filled-caret-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-filled-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input{color:var(--mat-form-field-outlined-input-text-color, var(--mat-sys-on-surface));caret-color:var(--mat-form-field-outlined-caret-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-outlined-input-text-placeholder-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-filled-error-caret-color, var(--mat-sys-error))}.mdc-text-field--outlined.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-text-field__input{caret-color:var(--mat-form-field-outlined-error-caret-color, var(--mat-sys-error))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-filled-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-text-field__input{color:var(--mat-form-field-outlined-disabled-input-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}@media(forced-colors: active){.mdc-text-field--disabled .mdc-text-field__input{background-color:Window}}.mdc-text-field--filled{height:56px;border-bottom-right-radius:0;border-bottom-left-radius:0;border-top-left-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small));border-top-right-radius:var(--mat-form-field-filled-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--filled:not(.mdc-text-field--disabled){background-color:var(--mat-form-field-filled-container-color, var(--mat-sys-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled{background-color:var(--mat-form-field-filled-disabled-container-color, color-mix(in srgb, var(--mat-sys-on-surface) 4%, transparent))}.mdc-text-field--outlined{height:56px;overflow:visible;padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)));padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px)}[dir=rtl] .mdc-text-field--outlined{padding-right:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)) + 4px);padding-left:max(16px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}.mdc-floating-label{position:absolute;left:0;transform-origin:left top;line-height:1.15rem;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:text;overflow:hidden;will-change:transform}[dir=rtl] .mdc-floating-label{right:0;left:auto;transform-origin:right top;text-align:right}.mdc-text-field .mdc-floating-label{top:50%;transform:translateY(-50%);pointer-events:none}.mdc-notched-outline .mdc-floating-label{display:inline-block;position:relative;max-width:100%}.mdc-text-field--outlined .mdc-floating-label{left:4px;right:auto}[dir=rtl] .mdc-text-field--outlined .mdc-floating-label{left:auto;right:4px}.mdc-text-field--filled .mdc-floating-label{left:16px;right:auto}[dir=rtl] .mdc-text-field--filled .mdc-floating-label{left:auto;right:16px}.mdc-text-field--disabled .mdc-floating-label{cursor:default}@media(forced-colors: active){.mdc-text-field--disabled .mdc-floating-label{z-index:1}}.mdc-text-field--filled.mdc-text-field--no-label .mdc-floating-label{display:none}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-filled-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-filled-hover-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-filled-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-filled-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-filled-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-filled-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--filled .mdc-floating-label{font-family:var(--mat-form-field-filled-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-filled-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-filled-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-filled-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-floating-label{color:var(--mat-form-field-outlined-label-text-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-focus-label-text-color, var(--mat-sys-primary))}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-floating-label{color:var(--mat-form-field-outlined-hover-label-text-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined.mdc-text-field--disabled .mdc-floating-label{color:var(--mat-form-field-outlined-disabled-label-text-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-floating-label{color:var(--mat-form-field-outlined-error-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mdc-floating-label{color:var(--mat-form-field-outlined-error-focus-label-text-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--disabled):hover .mdc-floating-label{color:var(--mat-form-field-outlined-error-hover-label-text-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined .mdc-floating-label{font-family:var(--mat-form-field-outlined-label-text-font, var(--mat-sys-body-large-font));font-size:var(--mat-form-field-outlined-label-text-size, var(--mat-sys-body-large-size));font-weight:var(--mat-form-field-outlined-label-text-weight, var(--mat-sys-body-large-weight));letter-spacing:var(--mat-form-field-outlined-label-text-tracking, var(--mat-sys-body-large-tracking))}.mdc-floating-label--float-above{cursor:auto;transform:translateY(-106%) scale(0.75)}.mdc-text-field--filled .mdc-floating-label--float-above{transform:translateY(-106%) scale(0.75)}.mdc-text-field--outlined .mdc-floating-label--float-above{transform:translateY(-37.25px) scale(1);font-size:.75rem}.mdc-notched-outline .mdc-floating-label--float-above{text-overflow:clip}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:133.3333333333%}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{transform:translateY(-34.75px) scale(0.75)}.mdc-text-field--outlined.mdc-notched-outline--upgraded .mdc-floating-label--float-above,.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:1rem}.mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:1px;margin-right:0;content:"*"}[dir=rtl] .mdc-floating-label--required:not(.mdc-floating-label--hide-required-marker)::after{margin-left:0;margin-right:1px}.mdc-notched-outline{display:flex;position:absolute;top:0;right:0;left:0;box-sizing:border-box;width:100%;max-width:100%;height:100%;text-align:left;pointer-events:none}[dir=rtl] .mdc-notched-outline{text-align:right}.mdc-text-field--outlined .mdc-notched-outline{z-index:1}.mat-mdc-notch-piece{box-sizing:border-box;height:100%;pointer-events:none;border:none;border-top:1px solid;border-bottom:1px solid}.mdc-text-field--focused .mat-mdc-notch-piece{border-width:2px}.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-outline-color, var(--mat-sys-outline));border-width:var(--mat-form-field-outlined-outline-width, 1px)}.mdc-text-field--outlined:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-hover-outline-color, var(--mat-sys-on-surface))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-focus-outline-color, var(--mat-sys-primary))}.mdc-text-field--outlined.mdc-text-field--disabled .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-disabled-outline-color, color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-notched-outline .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-hover-outline-color, var(--mat-sys-on-error-container))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--invalid.mdc-text-field--focused .mat-mdc-notch-piece{border-color:var(--mat-form-field-outlined-error-focus-outline-color, var(--mat-sys-error))}.mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline .mat-mdc-notch-piece{border-width:var(--mat-form-field-outlined-focus-outline-width, 2px)}.mdc-notched-outline__leading{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading{width:max(12px,var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small)))}[dir=rtl] .mdc-notched-outline__leading{border-left:none;border-right:1px solid;border-bottom-left-radius:0;border-top-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__trailing{flex-grow:1;border-left:none;border-right:1px solid;border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-right-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}[dir=rtl] .mdc-notched-outline__trailing{border-left:1px solid;border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;border-top-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small));border-bottom-left-radius:var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))}.mdc-notched-outline__notch{flex:0 0 auto;width:auto}.mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch{max-width:min(var(--mat-form-field-notch-max-width, 100%),calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{max-width:min(100%,calc(100% - max(12px, var(--mat-form-field-outlined-container-shape, var(--mat-sys-corner-extra-small))) * 2))}.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:1px}.mdc-text-field--focused.mdc-text-field--outlined .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-top:2px}.mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:0;padding-right:8px;border-top:none}[dir=rtl] .mdc-notched-outline--notched .mdc-notched-outline__notch{padding-left:8px;padding-right:0}.mdc-notched-outline--no-label .mdc-notched-outline__notch{display:none}.mdc-line-ripple::before,.mdc-line-ripple::after{position:absolute;bottom:0;left:0;width:100%;border-bottom-style:solid;content:""}.mdc-line-ripple::before{z-index:1;border-bottom-width:var(--mat-form-field-filled-active-indicator-height, 1px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-active-indicator-color, var(--mat-sys-on-surface-variant))}.mdc-text-field--filled:not(.mdc-text-field--disabled):not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-hover-active-indicator-color, var(--mat-sys-on-surface))}.mdc-text-field--filled.mdc-text-field--disabled .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-disabled-active-indicator-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-active-indicator-color, var(--mat-sys-error))}.mdc-text-field--filled:not(.mdc-text-field--disabled).mdc-text-field--invalid:not(.mdc-text-field--focused):hover .mdc-line-ripple::before{border-bottom-color:var(--mat-form-field-filled-error-hover-active-indicator-color, var(--mat-sys-on-error-container))}.mdc-line-ripple::after{transform:scaleX(0);opacity:0;z-index:2}.mdc-text-field--filled .mdc-line-ripple::after{border-bottom-width:var(--mat-form-field-filled-focus-active-indicator-height, 2px)}.mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-focus-active-indicator-color, var(--mat-sys-primary))}.mdc-text-field--filled.mdc-text-field--invalid:not(.mdc-text-field--disabled) .mdc-line-ripple::after{border-bottom-color:var(--mat-form-field-filled-error-focus-active-indicator-color, var(--mat-sys-error))}.mdc-line-ripple--active::after{transform:scaleX(1);opacity:1}.mdc-line-ripple--deactivating::after{opacity:0}.mdc-text-field--disabled{pointer-events:none}.mat-mdc-form-field-textarea-control{vertical-align:middle;resize:vertical;box-sizing:border-box;height:auto;margin:0;padding:0;border:none;overflow:auto}.mat-mdc-form-field-input-control.mat-mdc-form-field-input-control{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font:inherit;letter-spacing:inherit;text-decoration:inherit;text-transform:inherit;border:none}.mat-mdc-form-field .mat-mdc-floating-label.mdc-floating-label{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;line-height:normal;pointer-events:all;will-change:auto}.mat-mdc-form-field:not(.mat-form-field-disabled) .mat-mdc-floating-label.mdc-floating-label{cursor:inherit}.mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input,.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{height:auto}.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control.mdc-text-field__input[type=color]{height:23px}.mat-mdc-text-field-wrapper{height:auto;flex:auto;will-change:auto}.mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-left:0;--mat-mdc-form-field-label-offset-x: -16px}.mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-right:0}[dir=rtl] .mat-mdc-text-field-wrapper{padding-left:16px;padding-right:16px}[dir=rtl] .mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper{padding-left:0}[dir=rtl] .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper{padding-right:0}.mat-form-field-disabled .mdc-text-field__input::placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-moz-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input::-webkit-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-disabled .mdc-text-field__input:-ms-input-placeholder{color:var(--mat-form-field-disabled-input-text-placeholder-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-label-always-float .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms;opacity:1}.mat-mdc-text-field-wrapper .mat-mdc-form-field-infix .mat-mdc-floating-label{left:auto;right:auto}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-text-field__input{display:inline-block}.mat-mdc-form-field .mat-mdc-text-field-wrapper.mdc-text-field .mdc-notched-outline__notch{padding-top:0}.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:1px solid rgba(0,0,0,0)}[dir=rtl] .mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field.mat-mdc-form-field .mdc-notched-outline__notch{border-left:none;border-right:1px solid rgba(0,0,0,0)}.mat-mdc-form-field-infix{min-height:var(--mat-form-field-container-height, 56px);padding-top:var(--mat-form-field-filled-with-label-container-padding-top, 24px);padding-bottom:var(--mat-form-field-filled-with-label-container-padding-bottom, 8px)}.mdc-text-field--outlined .mat-mdc-form-field-infix,.mdc-text-field--no-label .mat-mdc-form-field-infix{padding-top:var(--mat-form-field-container-vertical-padding, 16px);padding-bottom:var(--mat-form-field-container-vertical-padding, 16px)}.mat-mdc-text-field-wrapper .mat-mdc-form-field-flex .mat-mdc-floating-label{top:calc(var(--mat-form-field-container-height, 56px)/2)}.mdc-text-field--filled .mat-mdc-floating-label{display:var(--mat-form-field-filled-label-display, block)}.mat-mdc-text-field-wrapper.mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{--mat-mdc-form-field-label-transform: translateY(calc(calc(6.75px + var(--mat-form-field-container-height, 56px) / 2) * -1)) scale(var(--mat-mdc-form-field-floating-label-scale, 0.75));transform:var(--mat-mdc-form-field-label-transform)}@keyframes _mat-form-field-subscript-animation{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}.mat-mdc-form-field-subscript-wrapper{box-sizing:border-box;width:100%;position:relative}.mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-error-wrapper{position:absolute;top:0;left:0;right:0;padding:0 16px;opacity:1;transform:translateY(0);animation:_mat-form-field-subscript-animation 0ms cubic-bezier(0.55, 0, 0.55, 0.2)}.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field-subscript-dynamic-size .mat-mdc-form-field-error-wrapper{position:static}.mat-mdc-form-field-bottom-align::before{content:"";display:inline-block;height:16px}.mat-mdc-form-field-bottom-align.mat-mdc-form-field-subscript-dynamic-size::before{content:unset}.mat-mdc-form-field-hint-end{order:1}.mat-mdc-form-field-hint-wrapper{display:flex}.mat-mdc-form-field-hint-spacer{flex:1 0 1em}.mat-mdc-form-field-error{display:block;color:var(--mat-form-field-error-text-color, var(--mat-sys-error))}.mat-mdc-form-field-subscript-wrapper,.mat-mdc-form-field-bottom-align::before{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-subscript-text-font, var(--mat-sys-body-small-font));line-height:var(--mat-form-field-subscript-text-line-height, var(--mat-sys-body-small-line-height));font-size:var(--mat-form-field-subscript-text-size, var(--mat-sys-body-small-size));letter-spacing:var(--mat-form-field-subscript-text-tracking, var(--mat-sys-body-small-tracking));font-weight:var(--mat-form-field-subscript-text-weight, var(--mat-sys-body-small-weight))}.mat-mdc-form-field-focus-overlay{top:0;left:0;right:0;bottom:0;position:absolute;opacity:0;pointer-events:none;background-color:var(--mat-form-field-state-layer-color, var(--mat-sys-on-surface))}.mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-hover-state-layer-opacity, var(--mat-sys-hover-state-layer-opacity))}.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay{opacity:var(--mat-form-field-focus-state-layer-opacity, 0)}select.mat-mdc-form-field-input-control{-moz-appearance:none;-webkit-appearance:none;background-color:rgba(0,0,0,0);display:inline-flex;box-sizing:border-box}select.mat-mdc-form-field-input-control:not(:disabled){cursor:pointer}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option{color:var(--mat-form-field-select-option-text-color, var(--mat-sys-neutral10))}select.mat-mdc-form-field-input-control:not(.mat-mdc-native-select-inline) option:disabled{color:var(--mat-form-field-select-disabled-option-text-color, color-mix(in srgb, var(--mat-sys-neutral10) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{content:"";width:0;height:0;border-left:5px solid rgba(0,0,0,0);border-right:5px solid rgba(0,0,0,0);border-top:5px solid;position:absolute;right:0;top:50%;margin-top:-2.5px;pointer-events:none;color:var(--mat-form-field-enabled-select-arrow-color, var(--mat-sys-on-surface-variant))}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-infix::after{right:auto;left:0}.mat-mdc-form-field-type-mat-native-select.mat-focused .mat-mdc-form-field-infix::after{color:var(--mat-form-field-focus-select-arrow-color, var(--mat-sys-primary))}.mat-mdc-form-field-type-mat-native-select.mat-form-field-disabled .mat-mdc-form-field-infix::after{color:var(--mat-form-field-disabled-select-arrow-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:15px}[dir=rtl] .mat-mdc-form-field-type-mat-native-select .mat-mdc-form-field-input-control{padding-right:0;padding-left:15px}@media(forced-colors: active){.mat-form-field-appearance-fill .mat-mdc-text-field-wrapper{outline:solid 1px}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-form-field-disabled .mat-mdc-text-field-wrapper{outline-color:GrayText}}@media(forced-colors: active){.mat-form-field-appearance-fill.mat-focused .mat-mdc-text-field-wrapper{outline:dashed 3px}}@media(forced-colors: active){.mat-mdc-form-field.mat-focused .mdc-notched-outline{border:dashed 3px}}.mat-mdc-form-field-input-control[type=date],.mat-mdc-form-field-input-control[type=datetime],.mat-mdc-form-field-input-control[type=datetime-local],.mat-mdc-form-field-input-control[type=month],.mat-mdc-form-field-input-control[type=week],.mat-mdc-form-field-input-control[type=time]{line-height:1}.mat-mdc-form-field-input-control::-webkit-datetime-edit{line-height:1;padding:0;margin-bottom:-2px}.mat-mdc-form-field{--mat-mdc-form-field-floating-label-scale: 0.75;display:inline-flex;flex-direction:column;min-width:0;text-align:left;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;font-family:var(--mat-form-field-container-text-font, var(--mat-sys-body-large-font));line-height:var(--mat-form-field-container-text-line-height, var(--mat-sys-body-large-line-height));font-size:var(--mat-form-field-container-text-size, var(--mat-sys-body-large-size));letter-spacing:var(--mat-form-field-container-text-tracking, var(--mat-sys-body-large-tracking));font-weight:var(--mat-form-field-container-text-weight, var(--mat-sys-body-large-weight))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-floating-label--float-above{font-size:calc(var(--mat-form-field-outlined-label-text-populated-size)*var(--mat-mdc-form-field-floating-label-scale))}.mat-mdc-form-field .mdc-text-field--outlined .mdc-notched-outline--upgraded .mdc-floating-label--float-above{font-size:var(--mat-form-field-outlined-label-text-populated-size)}[dir=rtl] .mat-mdc-form-field{text-align:right}.mat-mdc-form-field-flex{display:inline-flex;align-items:baseline;box-sizing:border-box;width:100%}.mat-mdc-text-field-wrapper{width:100%;z-index:0}.mat-mdc-form-field-icon-prefix,.mat-mdc-form-field-icon-suffix{align-self:center;line-height:0;pointer-events:auto;position:relative;z-index:1}.mat-mdc-form-field-icon-prefix>.mat-icon,.mat-mdc-form-field-icon-suffix>.mat-icon{padding:0 12px;box-sizing:content-box}.mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-leading-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-prefix{color:var(--mat-form-field-disabled-leading-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-trailing-icon-color, var(--mat-sys-on-surface-variant))}.mat-form-field-disabled .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-disabled-trailing-icon-color, color-mix(in srgb, var(--mat-sys-on-surface) 38%, transparent))}.mat-form-field-invalid .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-trailing-icon-color, var(--mat-sys-error))}.mat-form-field-invalid:not(.mat-focused):not(.mat-form-field-disabled) .mat-mdc-text-field-wrapper:hover .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-hover-trailing-icon-color, var(--mat-sys-on-error-container))}.mat-form-field-invalid.mat-focused .mat-mdc-text-field-wrapper .mat-mdc-form-field-icon-suffix{color:var(--mat-form-field-error-focus-trailing-icon-color, var(--mat-sys-error))}.mat-mdc-form-field-icon-prefix,[dir=rtl] .mat-mdc-form-field-icon-suffix{padding:0 4px 0 0}.mat-mdc-form-field-icon-suffix,[dir=rtl] .mat-mdc-form-field-icon-prefix{padding:0 0 0 4px}.mat-mdc-form-field-subscript-wrapper .mat-icon,.mat-mdc-form-field label .mat-icon{width:1em;height:1em;font-size:inherit}.mat-mdc-form-field-infix{flex:auto;min-width:0;width:180px;position:relative;box-sizing:border-box}.mat-mdc-form-field-infix:has(textarea[cols]){width:auto}.mat-mdc-form-field .mdc-notched-outline__notch{margin-left:-1px;-webkit-clip-path:inset(-9em -999em -9em 1px);clip-path:inset(-9em -999em -9em 1px)}[dir=rtl] .mat-mdc-form-field .mdc-notched-outline__notch{margin-left:0;margin-right:-1px;-webkit-clip-path:inset(-9em 1px -9em -999em);clip-path:inset(-9em 1px -9em -999em)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-floating-label{transition:transform 150ms cubic-bezier(0.4, 0, 0.2, 1),color 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input{transition:opacity 150ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-moz-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input::-webkit-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field__input:-ms-input-placeholder{transition:opacity 67ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-moz-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-moz-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input::-webkit-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input::-webkit-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--no-label .mdc-text-field__input:-ms-input-placeholder,.mat-mdc-form-field.mat-form-field-animations-enabled.mdc-text-field--focused .mdc-text-field__input:-ms-input-placeholder{transition-delay:40ms;transition-duration:110ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-text-field--filled:not(.mdc-ripple-upgraded):focus .mdc-text-field__ripple::before{transition-duration:75ms}.mat-mdc-form-field.mat-form-field-animations-enabled .mdc-line-ripple::after{transition:transform 180ms cubic-bezier(0.4, 0, 0.2, 1),opacity 180ms cubic-bezier(0.4, 0, 0.2, 1)}.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-hint-wrapper,.mat-mdc-form-field.mat-form-field-animations-enabled .mat-mdc-form-field-error-wrapper{animation-duration:300ms}.mdc-notched-outline .mdc-floating-label{max-width:calc(100% + 1px)}.mdc-notched-outline--upgraded .mdc-floating-label--float-above{max-width:calc(133.3333333333% + 1px)}\n']
-    }]
-  }], () => [], {
-    _textField: [{
-      type: ViewChild,
-      args: ["textField"]
-    }],
-    _iconPrefixContainer: [{
-      type: ViewChild,
-      args: ["iconPrefixContainer"]
-    }],
-    _textPrefixContainer: [{
-      type: ViewChild,
-      args: ["textPrefixContainer"]
-    }],
-    _iconSuffixContainer: [{
-      type: ViewChild,
-      args: ["iconSuffixContainer"]
-    }],
-    _textSuffixContainer: [{
-      type: ViewChild,
-      args: ["textSuffixContainer"]
-    }],
-    _floatingLabel: [{
-      type: ViewChild,
-      args: [MatFormFieldFloatingLabel]
-    }],
-    _notchedOutline: [{
-      type: ViewChild,
-      args: [MatFormFieldNotchedOutline]
-    }],
-    _lineRipple: [{
-      type: ViewChild,
-      args: [MatFormFieldLineRipple]
-    }],
-    _iconPrefixContainerSignal: [{
-      type: ViewChild,
-      args: ["iconPrefixContainer", {
-        isSignal: true
-      }]
-    }],
-    _textPrefixContainerSignal: [{
-      type: ViewChild,
-      args: ["textPrefixContainer", {
-        isSignal: true
-      }]
-    }],
-    _iconSuffixContainerSignal: [{
-      type: ViewChild,
-      args: ["iconSuffixContainer", {
-        isSignal: true
-      }]
-    }],
-    _textSuffixContainerSignal: [{
-      type: ViewChild,
-      args: ["textSuffixContainer", {
-        isSignal: true
-      }]
-    }],
-    _formFieldControl: [{
-      type: ContentChild,
-      args: [MatFormFieldControl]
-    }],
-    _prefixChildren: [{
-      type: ContentChildren,
-      args: [MAT_PREFIX, {
-        descendants: true
-      }]
-    }],
-    _suffixChildren: [{
-      type: ContentChildren,
-      args: [MAT_SUFFIX, {
-        descendants: true
-      }]
-    }],
-    _errorChildren: [{
-      type: ContentChildren,
-      args: [MAT_ERROR, {
-        descendants: true
-      }]
-    }],
-    _hintChildren: [{
-      type: ContentChildren,
-      args: [MatHint, {
-        descendants: true
-      }]
-    }],
-    _labelChild: [{
-      type: ContentChild,
-      args: [forwardRef(() => MatLabel), {
-        isSignal: true
-      }]
-    }],
-    hideRequiredMarker: [{
-      type: Input
-    }],
-    color: [{
-      type: Input
-    }],
-    floatLabel: [{
-      type: Input
-    }],
-    appearance: [{
-      type: Input
-    }],
-    subscriptSizing: [{
-      type: Input
-    }],
-    hintLabel: [{
-      type: Input
-    }]
-  });
-})();
-
 // node_modules/@angular/material/fesm2022/_error-options-chunk.mjs
 var ShowOnDirtyErrorStateMatcher = class _ShowOnDirtyErrorStateMatcher {
   isErrorState(control, form) {
@@ -56514,30 +56018,6 @@ var _ErrorStateTracker = class {
     }
   }
 };
-
-// node_modules/@angular/material/fesm2022/form-field.mjs
-var MatFormFieldModule = class _MatFormFieldModule {
-  static \u0275fac = function MatFormFieldModule_Factory(__ngFactoryType__) {
-    return new (__ngFactoryType__ || _MatFormFieldModule)();
-  };
-  static \u0275mod = /* @__PURE__ */ \u0275\u0275defineNgModule({
-    type: _MatFormFieldModule,
-    imports: [ObserversModule, MatFormField, MatLabel, MatError, MatHint, MatPrefix, MatSuffix],
-    exports: [MatFormField, MatLabel, MatHint, MatError, MatPrefix, MatSuffix, BidiModule]
-  });
-  static \u0275inj = /* @__PURE__ */ \u0275\u0275defineInjector({
-    imports: [ObserversModule, MatFormField, BidiModule]
-  });
-};
-(() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(MatFormFieldModule, [{
-    type: NgModule,
-    args: [{
-      imports: [ObserversModule, MatFormField, MatLabel, MatError, MatHint, MatPrefix, MatSuffix],
-      exports: [MatFormField, MatLabel, MatHint, MatError, MatPrefix, MatSuffix, BidiModule]
-    }]
-  }], null, null);
-})();
 
 // node_modules/@angular/material/fesm2022/input.mjs
 function getMatInputUnsupportedTypeError(type) {
@@ -56969,6 +56449,553 @@ var MatInputModule = class _MatInputModule {
       exports: [MatInput, MatFormFieldModule, TextFieldModule, BidiModule]
     }]
   }], null, null);
+})();
+
+// src/environments/environment.ts
+var environment = {
+  production: false,
+  API_BASE_URL: "/chanrobles-bar/mock/api"
+};
+
+// src/app/services/api.service.ts
+var ApiService = class _ApiService {
+  http;
+  authService;
+  apiUrl = environment.API_BASE_URL;
+  constructor(http, authService) {
+    this.http = http;
+    this.authService = authService;
+  }
+  // Helper to get userId
+  getUserId() {
+    return this.authService.getUserId();
+  }
+  postData(endpoint, payload) {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json"
+    });
+    return this.http.post(`${this.apiUrl}/${endpoint}`, payload, { headers }).pipe(catchError((error) => {
+      console.error("API call error:", error);
+      return throwError(() => error.error || "Server error");
+    }));
+  }
+  getExamHistory(userId, courseId) {
+    const query = `
+      SELECT
+          da.id AS diag_ans_id,
+          da.question_id,
+          da.batch_id AS course_id,
+          COALESCE(dar.answer, da.answer) AS user_answer,
+          COALESCE(dar.score, da.score) AS score,
+          COALESCE(dar.feedback, da.feedback) AS feedback,
+          COALESCE(dar.date_created, da.date_created) AS date_created,
+          qn.q_question AS question_text,
+          qn.q_answer AS expected_answer
+      FROM
+          diag_ans da
+      JOIN
+          quiz_new qn ON da.question_id = qn.q_id
+      LEFT JOIN
+          diag_ans_retake dar ON da.user_id = dar.user_id AND da.question_id = dar.question_id
+      WHERE
+          da.user_id = ? AND da.batch_id = ?
+      ORDER BY
+          date_created DESC;
+    `;
+    const params = [userId, courseId];
+    return this.getDbData(query, params).pipe(map((response) => {
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response && response.error) {
+        throw new Error(response.error);
+      } else {
+        throw new Error("Unknown error fetching exam history");
+      }
+    }), catchError((error) => {
+      console.error("Error fetching exam history:", error);
+      return throwError(() => new Error("Could not fetch exam history."));
+    }));
+  }
+  getDbData(query, params = []) {
+    const payload = { query, params };
+    return this.postData("db.php", payload);
+  }
+  // New method to call AI for grading
+  gradeAnswer(userAnswer, expectedAnswer) {
+    const payload = { user_answer: userAnswer, expected_answer: expectedAnswer };
+    return this.postData("ai.php", payload);
+  }
+  // New method to get the next unanswered question for a course
+  getNextQuestion(courseId, userId) {
+    const query = `
+      SELECT q_id, q_question, q_answer
+      FROM quiz_new
+      WHERE q_course_id = ?
+        AND q_id NOT IN (SELECT question_id FROM diag_ans WHERE user_id = ? AND batch_id = ?)
+      ORDER BY q_id ASC
+      LIMIT 1;
+    `;
+    const params = [courseId, userId, courseId];
+    return this.getDbData(query, params);
+  }
+  // New method to get a specific question by ID
+  getQuestionById(questionId) {
+    const query = `
+      SELECT q_id, q_question, q_answer
+      FROM quiz_new
+      WHERE q_id = ?;
+    `;
+    const params = [questionId];
+    return this.getDbData(query, params);
+  }
+  // New method to save graded answer to diag_ans
+  saveDiagAns(userId, courseId, questionId, answer, score, feedback) {
+    const query = `
+      INSERT INTO diag_ans (user_id, batch_id, question_id, answer, score, feedback, date_created)
+      VALUES (?, ?, ?, ?, ?, ?, NOW());
+    `;
+    const params = [userId, courseId, questionId, answer, score, feedback];
+    return this.getDbData(query, params);
+  }
+  // New method to save graded retake answer to diag_ans_retake
+  saveRetakeAnswer(userId, courseId, questionId, answer, score, feedback) {
+    const query = `
+      INSERT INTO diag_ans_retake (user_id, batch_id, question_id, answer, score, feedback, date_created)
+      VALUES (?, ?, ?, ?, ?, ?, NOW());
+    `;
+    const params = [userId, courseId, questionId, answer, score, feedback];
+    return this.getDbData(query, params);
+  }
+  // New method to get exam status for a specific course for the current user
+  getExamStatusForCourse(courseId, userId) {
+    const query = `
+      SELECT
+        (SELECT COUNT(q_id) FROM quiz_new WHERE q_course_id = ?) AS total_questions,
+        (SELECT COUNT(question_id) FROM diag_ans WHERE user_id = ? AND batch_id = ?) AS answered_questions;
+    `;
+    const params = [courseId, userId, courseId];
+    return this.getDbData(query, params).pipe(
+      // Corrected: pass params here
+      map((response) => {
+        const totalQuestions = response[0]?.total_questions || 0;
+        const answeredQuestions = response[0]?.answered_questions || 0;
+        return {
+          completed: totalQuestions > 0 && answeredQuestions >= totalQuestions,
+          answeredCount: answeredQuestions,
+          totalQuestions
+        };
+      })
+    );
+  }
+  // New method to get detailed diag_ans for a user, including the answer
+  getDiagAnsDetailForUser(userId, courseId) {
+    const query = `
+      SELECT id, batch_id, question_id, answer, score, feedback, date_created
+      FROM diag_ans
+      WHERE user_id = ? AND batch_id = ?;
+    `;
+    const params = [userId, courseId];
+    return this.getDbData(query, params);
+  }
+  getDiagAnsForUser() {
+    const userId = this.getUserId();
+    if (!userId) {
+      console.error("User ID not found. Cannot fetch diag_ans.");
+      return throwError(() => new Error("User not logged in."));
+    }
+    const query = `
+      SELECT batch_id, question_id, score
+      FROM diag_ans
+      WHERE user_id = ?;
+    `;
+    const params = [userId];
+    return this.getDbData(query, params);
+  }
+  getQuizQuestionsCountPerCourse() {
+    const query = `
+      SELECT q_course_id, COUNT(q_id) AS total_questions
+      FROM quiz_new
+      GROUP BY q_course_id;
+    `;
+    return this.getDbData(query);
+  }
+  getCategoriesWithCourses() {
+    const query = `
+        /* AGGREGATE_COURSES */
+        SELECT
+            c.id AS category_id,
+            c.name AS category_name,
+            co.id,
+            co.title,
+            co.short_description,
+            co.upcoming_image_thumbnail,
+            co.price,
+            co.level
+        FROM
+            category c
+        LEFT JOIN
+            course co ON c.id = co.category_id
+        ORDER BY
+            c.name, co.id;
+      `;
+    return this.getDbData(query);
+  }
+  static \u0275fac = function ApiService_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _ApiService)(\u0275\u0275inject(HttpClient), \u0275\u0275inject(AuthService));
+  };
+  static \u0275prov = /* @__PURE__ */ \u0275\u0275defineInjectable({ token: _ApiService, factory: _ApiService.\u0275fac, providedIn: "root" });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(ApiService, [{
+    type: Injectable,
+    args: [{
+      providedIn: "root"
+    }]
+  }], () => [{ type: HttpClient }, { type: AuthService }], null);
+})();
+
+// src/app/home/home.component.ts
+function HomeComponent_div_8_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 6);
+    \u0275\u0275element(1, "mat-spinner");
+    \u0275\u0275elementStart(2, "p");
+    \u0275\u0275text(3, "Loading courses...");
+    \u0275\u0275elementEnd()();
+  }
+}
+function HomeComponent_div_9_div_1_p_13_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "p")(1, "strong");
+    \u0275\u0275text(2, "Progress:");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const course_r2 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate1(" ", course_r2.progressText);
+  }
+}
+function HomeComponent_div_9_div_1_div_14_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 21);
+    \u0275\u0275element(1, "div", 22);
+    \u0275\u0275elementStart(2, "span", 23);
+    \u0275\u0275text(3);
+    \u0275\u0275pipe(4, "number");
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const course_r2 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275styleProp("width", course_r2.progressBarPercentage, "%");
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate1("", \u0275\u0275pipeBind2(4, 3, course_r2.progressBarPercentage, "1.0-0"), "%");
+  }
+}
+function HomeComponent_div_9_div_1_p_15_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "p")(1, "strong");
+    \u0275\u0275text(2, "Average Score:");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(3);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const course_r2 = \u0275\u0275nextContext().$implicit;
+    \u0275\u0275advance(3);
+    \u0275\u0275textInterpolate1(" ", course_r2.averageScore, "%");
+  }
+}
+function HomeComponent_div_9_div_1_button_19_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r4 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 24);
+    \u0275\u0275listener("click", function HomeComponent_div_9_div_1_button_19_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r4);
+      const course_r2 = \u0275\u0275nextContext().$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.goToHistory(course_r2.id));
+    });
+    \u0275\u0275elementStart(1, "mat-icon");
+    \u0275\u0275text(2, "history");
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(3, "span");
+    \u0275\u0275text(4, "History");
+    \u0275\u0275elementEnd()();
+  }
+}
+function HomeComponent_div_9_div_1_Template(rf, ctx) {
+  if (rf & 1) {
+    const _r1 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "div", 9);
+    \u0275\u0275element(1, "img", 10);
+    \u0275\u0275elementStart(2, "div", 11)(3, "div", 12)(4, "h3", 13);
+    \u0275\u0275text(5);
+    \u0275\u0275elementEnd();
+    \u0275\u0275elementStart(6, "p", 14);
+    \u0275\u0275text(7);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(8, "div", 15)(9, "p")(10, "strong");
+    \u0275\u0275text(11, "Level:");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(12);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(13, HomeComponent_div_9_div_1_p_13_Template, 4, 1, "p", 16)(14, HomeComponent_div_9_div_1_div_14_Template, 5, 6, "div", 17)(15, HomeComponent_div_9_div_1_p_15_Template, 4, 1, "p", 16);
+    \u0275\u0275elementEnd()();
+    \u0275\u0275elementStart(16, "div", 18)(17, "button", 19);
+    \u0275\u0275listener("click", function HomeComponent_div_9_div_1_Template_button_click_17_listener() {
+      const course_r2 = \u0275\u0275restoreView(_r1).$implicit;
+      const ctx_r2 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r2.goToExam(course_r2.id));
+    });
+    \u0275\u0275text(18);
+    \u0275\u0275elementEnd();
+    \u0275\u0275template(19, HomeComponent_div_9_div_1_button_19_Template, 5, 0, "button", 20);
+    \u0275\u0275elementEnd()();
+  }
+  if (rf & 2) {
+    const course_r2 = ctx.$implicit;
+    \u0275\u0275advance();
+    \u0275\u0275property("src", course_r2.thumbnail, \u0275\u0275sanitizeUrl);
+    \u0275\u0275advance(4);
+    \u0275\u0275textInterpolate(course_r2.title);
+    \u0275\u0275advance(2);
+    \u0275\u0275textInterpolate(course_r2.short_description);
+    \u0275\u0275advance(5);
+    \u0275\u0275textInterpolate1(" ", course_r2.level);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", course_r2.progressText);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", course_r2.progressBarPercentage !== void 0);
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", course_r2.averageScore);
+    \u0275\u0275advance(2);
+    \u0275\u0275property("disabled", course_r2.isExamCompleted);
+    \u0275\u0275advance();
+    \u0275\u0275textInterpolate1(" ", course_r2.isExamCompleted ? "Completed" : course_r2.hasTakenExam ? "Continue Exam" : "Take Mock Exam", " ");
+    \u0275\u0275advance();
+    \u0275\u0275property("ngIf", course_r2.hasTakenExam);
+  }
+}
+function HomeComponent_div_9_Template(rf, ctx) {
+  if (rf & 1) {
+    \u0275\u0275elementStart(0, "div", 7);
+    \u0275\u0275template(1, HomeComponent_div_9_div_1_Template, 20, 10, "div", 8);
+    \u0275\u0275elementEnd();
+  }
+  if (rf & 2) {
+    const ctx_r2 = \u0275\u0275nextContext();
+    \u0275\u0275advance();
+    \u0275\u0275property("ngForOf", ctx_r2.filteredCourses());
+  }
+}
+var HomeComponent = class _HomeComponent {
+  apiService;
+  router;
+  authService;
+  title = signal("Mock Bar App", ...ngDevMode ? [{ debugName: "title" }] : []);
+  loading = signal(true, ...ngDevMode ? [{ debugName: "loading" }] : []);
+  // Make loading a signal
+  allCourses = signal([], ...ngDevMode ? [{ debugName: "allCourses" }] : []);
+  // Array to hold all courses flattened from categories
+  userDiagAns = [];
+  // To store diag_ans for the logged-in user
+  quizQuestionsCount = {};
+  // To store total questions per course
+  searchTerm = signal("", ...ngDevMode ? [{ debugName: "searchTerm" }] : []);
+  filteredCourses = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    return this.allCourses().filter((course) => course.title.toLowerCase().includes(term) || course.short_description.toLowerCase().includes(term) || course.category_name.toLowerCase().includes(term) || course.level.toLowerCase().includes(term));
+  }, ...ngDevMode ? [{ debugName: "filteredCourses" }] : []);
+  constructor(apiService, router, authService) {
+    this.apiService = apiService;
+    this.router = router;
+    this.authService = authService;
+  }
+  ngOnInit() {
+    this.fetchAllData();
+  }
+  applyFilter(event) {
+    const filterValue = event.target.value;
+    this.searchTerm.set(filterValue);
+  }
+  fetchAllData() {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      console.error("User not logged in. Cannot fetch data for courses.");
+      this.loading.set(false);
+      return;
+    }
+    this.loading.set(true);
+    forkJoin({
+      categoriesWithCourses: this.apiService.getCategoriesWithCourses(),
+      diagAns: this.apiService.getDiagAnsForUser(),
+      quizCounts: this.apiService.getQuizQuestionsCountPerCourse()
+    }).pipe(
+      // Once initial data is loaded, fetch exam statuses for all courses
+      switchMap((initialResults) => {
+        let tempAllCourses = [];
+        initialResults.categoriesWithCourses.map((category) => {
+          category.courses = category.courses.map((course) => __spreadProps(__spreadValues({}, course), {
+            category_name: category.category_name,
+            thumbnail: course.upcoming_image_thumbnail || "https://topbarassist.com/chanrobles-bar/mock/img/placeholder.jpg"
+          }));
+          tempAllCourses = tempAllCourses.concat(category.courses);
+        });
+        this.userDiagAns = initialResults.diagAns;
+        this.quizQuestionsCount = initialResults.quizCounts.reduce((acc, curr) => {
+          acc[curr.q_course_id] = curr.total_questions;
+          return acc;
+        }, {});
+        const examStatusObservables = tempAllCourses.map((course) => this.apiService.getExamStatusForCourse(course.id, userId).pipe(map((status) => ({ courseId: course.id, status }))));
+        return forkJoin(examStatusObservables).pipe(map((examStatuses) => ({ initialResults, examStatuses, tempAllCourses })));
+      })
+    ).subscribe({
+      next: ({ examStatuses, tempAllCourses }) => {
+        const examStatusMap = new Map(examStatuses.map((es) => [es.courseId, es.status]));
+        const processedCourses = tempAllCourses.map((course) => {
+          const status = examStatusMap.get(course.id);
+          return __spreadProps(__spreadValues({}, course), {
+            isExamCompleted: status?.completed || false,
+            hasTakenExam: (status?.answeredCount || 0) > 0
+            // User has taken exam if answered any questions
+          });
+        });
+        this.allCourses.set(this.processCoursesForMetrics(processedCourses));
+        this.loading.set(false);
+      },
+      error: (error) => {
+        console.error("Error fetching all data:", error);
+        this.loading.set(false);
+      }
+    });
+  }
+  processCoursesForMetrics(coursesToProcess) {
+    return coursesToProcess.map((course) => {
+      const courseId = course.id;
+      const totalQuestions = this.quizQuestionsCount[courseId] || 0;
+      const userAnswersForCourse = this.userDiagAns.filter(
+        (ans) => ans.batch_id == courseId
+        // Using == for potential type coercion with string/number IDs
+      );
+      const answeredQuestions = userAnswersForCourse.length;
+      let progressText = `${answeredQuestions}/${totalQuestions} questions`;
+      let progressBarPercentage = 0;
+      if (totalQuestions > 0) {
+        progressBarPercentage = answeredQuestions / totalQuestions * 100;
+      }
+      let averageScore = 0;
+      if (answeredQuestions > 0) {
+        const sumScores = userAnswersForCourse.reduce((sum, ans) => sum + ans.score, 0);
+        averageScore = sumScores / answeredQuestions;
+      }
+      return __spreadProps(__spreadValues({}, course), {
+        progressText,
+        progressBarPercentage,
+        averageScore: averageScore.toFixed(2)
+        // Format to 2 decimal places
+      });
+    });
+  }
+  goToExam(courseId) {
+    this.router.navigate(["/exam", courseId]);
+  }
+  goToHistory(courseId) {
+    this.router.navigate(["/history", courseId]);
+  }
+  static \u0275fac = function HomeComponent_Factory(__ngFactoryType__) {
+    return new (__ngFactoryType__ || _HomeComponent)(\u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(Router), \u0275\u0275directiveInject(AuthService));
+  };
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HomeComponent, selectors: [["app-home"]], decls: 10, vars: 2, consts: [[1, "search-bar-container"], ["appearance", "outline", 1, "search-input"], ["matInput", "", "placeholder", "e.g., Civil Law, Bar Exam", 3, "input"], ["matSuffix", ""], ["class", "loading-indicator", 4, "ngIf"], ["class", "list-view-container", 4, "ngIf"], [1, "loading-indicator"], [1, "list-view-container"], ["class", "course-list-item", 4, "ngFor", "ngForOf"], [1, "course-list-item"], ["alt", "Course Thumbnail", 1, "course-thumbnail-img", 3, "src"], [1, "course-details"], [1, "course-header"], [1, "course-title"], [1, "course-subtitle"], [1, "course-meta"], [4, "ngIf"], ["class", "progress-bar-container", 4, "ngIf"], [1, "course-actions"], ["mat-flat-button", "", "color", "primary", 3, "click", "disabled"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", "class", "history-button", 3, "click", 4, "ngIf"], [1, "progress-bar-container"], [1, "progress-bar"], [1, "progress-percentage"], ["mat-stroked-button", "", "color", "accent", "aria-label", "View exam history", 1, "history-button", 3, "click"]], template: function HomeComponent_Template(rf, ctx) {
+    if (rf & 1) {
+      \u0275\u0275elementStart(0, "main")(1, "div", 0)(2, "mat-form-field", 1)(3, "mat-label");
+      \u0275\u0275text(4, "Search Courses");
+      \u0275\u0275elementEnd();
+      \u0275\u0275elementStart(5, "input", 2);
+      \u0275\u0275listener("input", function HomeComponent_Template_input_input_5_listener($event) {
+        return ctx.applyFilter($event);
+      });
+      \u0275\u0275elementEnd();
+      \u0275\u0275elementStart(6, "mat-icon", 3);
+      \u0275\u0275text(7, "search");
+      \u0275\u0275elementEnd()()();
+      \u0275\u0275template(8, HomeComponent_div_8_Template, 4, 0, "div", 4)(9, HomeComponent_div_9_Template, 2, 1, "div", 5);
+      \u0275\u0275elementEnd();
+    }
+    if (rf & 2) {
+      \u0275\u0275advance(8);
+      \u0275\u0275property("ngIf", ctx.loading);
+      \u0275\u0275advance();
+      \u0275\u0275property("ngIf", !ctx.loading);
+    }
+  }, dependencies: [CommonModule, NgForOf, NgIf, MatButtonModule, MatButton, MatIconModule, MatIcon, MatCardModule, MatProgressSpinnerModule, MatProgressSpinner, MatFormFieldModule, MatFormField, MatLabel, MatSuffix, MatInputModule, MatInput, DecimalPipe], styles: ["\n\n.loading-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 20px;\n  width: 100%;\n  box-sizing: border-box;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item[_ngcontent-%COMP%]:hover {\n  transform: translateY(-3px);\n}\n.course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details[_ngcontent-%COMP%] {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header[_ngcontent-%COMP%] {\n  margin-bottom: 5px;\n}\n.course-title[_ngcontent-%COMP%] {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle[_ngcontent-%COMP%] {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container[_ngcontent-%COMP%] {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar[_ngcontent-%COMP%] {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage[_ngcontent-%COMP%] {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions[_ngcontent-%COMP%]   button[_ngcontent-%COMP%] {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses[_ngcontent-%COMP%] {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details[_ngcontent-%COMP%] {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions[_ngcontent-%COMP%] {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input[_ngcontent-%COMP%] {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */"] });
+};
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(HomeComponent, [{
+    type: Component,
+    args: [{ selector: "app-home", standalone: true, imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatFormFieldModule, MatInputModule], template: `<main>
+  <div class="search-bar-container">
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search Courses</mat-label>
+      <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
+  <div *ngIf="loading" class="loading-indicator">
+    <mat-spinner></mat-spinner>
+    <p>Loading courses...</p>
+  </div>
+
+  <div *ngIf="!loading" class="list-view-container">
+    <div *ngFor="let course of filteredCourses()" class="course-list-item">
+      <img [src]="course.thumbnail" alt="Course Thumbnail" class="course-thumbnail-img">
+      <div class="course-details">
+        <div class="course-header">
+          <h3 class="course-title">{{ course.title }}</h3>
+          <p class="course-subtitle">{{ course.short_description }}</p>
+        </div>
+        <div class="course-meta">
+          <p><strong>Level:</strong> {{ course.level }}</p>
+          <p *ngIf="course.progressText"><strong>Progress:</strong> {{ course.progressText }}</p>
+          <div *ngIf="course.progressBarPercentage !== undefined" class="progress-bar-container">
+            <div class="progress-bar" [style.width.%]="course.progressBarPercentage"></div>
+            <span class="progress-percentage">{{ course.progressBarPercentage | number:'1.0-0' }}%</span>
+          </div>
+          <p *ngIf="course.averageScore"><strong>Average Score:</strong> {{ course.averageScore }}%</p>
+        </div>
+      </div>
+      <div class="course-actions">
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="goToExam(course.id)"
+          [disabled]="course.isExamCompleted"
+        >
+          {{ course.isExamCompleted ? 'Completed' : (course.hasTakenExam ? 'Continue Exam' : 'Take Mock Exam') }}
+        </button>
+        <button
+          *ngIf="course.hasTakenExam"
+          mat-stroked-button
+          color="accent"
+          (click)="goToHistory(course.id)"
+          aria-label="View exam history"
+          class="history-button"
+        >
+          <mat-icon>history</mat-icon>
+          <span>History</span>
+        </button>
+      </div>
+    </div>
+    <!-- We might need a message if allCourses is empty, but for now, omitting the no-courses message -->
+  </div>
+</main>`, styles: ["/* src/app/home/home.component.css */\n.loading-indicator {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container {\n  display: flex;\n  justify-content: center;\n  padding: 20px;\n  width: 100%;\n  box-sizing: border-box;\n}\n.search-input {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item:hover {\n  transform: translateY(-3px);\n}\n.course-list-item .course-thumbnail-img {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header {\n  margin-bottom: 5px;\n}\n.course-title {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta p {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions button {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button mat-icon {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item .course-thumbnail-img {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */\n"] }]
+  }], () => [{ type: ApiService }, { type: Router }, { type: AuthService }], null);
+})();
+(() => {
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(HomeComponent, { className: "HomeComponent", filePath: "src/app/home/home.component.ts", lineNumber: 42 });
 })();
 
 // node_modules/@angular/material/fesm2022/progress-bar.mjs

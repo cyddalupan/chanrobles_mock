@@ -1,26 +1,35 @@
 <main>
+  <div class="search-bar-container">
+    <mat-form-field appearance="outline" class="search-input">
+      <mat-label>Search Courses</mat-label>
+      <input matInput placeholder="e.g., Civil Law, Bar Exam" (input)="applyFilter($event)">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
   <div *ngIf="loading" class="loading-indicator">
     <mat-spinner></mat-spinner>
     <p>Loading courses...</p>
   </div>
 
-  <div *ngIf="!loading" class="all-course-cards-container">
-    <mat-card *ngFor="let course of allCourses" class="course-card">
+  <div *ngIf="!loading" class="list-view-container">
+    <div *ngFor="let course of filteredCourses()" class="course-list-item">
       <img [src]="course.thumbnail" alt="Course Thumbnail" class="course-thumbnail-img">
-      <mat-card-header>
-        <mat-card-title>{{ course.title }}</mat-card-title>
-        <mat-card-subtitle>{{ course.short_description }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p><strong>Level:</strong> {{ course.level }}</p>
-        <p *ngIf="course.progressText"><strong>Progress:</strong> {{ course.progressText }}</p>
-        <div *ngIf="course.progressBarPercentage !== undefined" class="progress-bar-container">
-          <div class="progress-bar" [style.width.%]="course.progressBarPercentage"></div>
-          <span class="progress-percentage">{{ course.progressBarPercentage | number:'1.0-0' }}%</span>
+      <div class="course-details">
+        <div class="course-header">
+          <h3 class="course-title">{{ course.title }}</h3>
+          <p class="course-subtitle">{{ course.short_description }}</p>
         </div>
-        <p *ngIf="course.averageScore"><strong>Average Score:</strong> {{ course.averageScore }}%</p>
-      </mat-card-content>
-      <mat-card-actions class="course-actions">
+        <div class="course-meta">
+          <p><strong>Level:</strong> {{ course.level }}</p>
+          <p *ngIf="course.progressText"><strong>Progress:</strong> {{ course.progressText }}</p>
+          <div *ngIf="course.progressBarPercentage !== undefined" class="progress-bar-container">
+            <div class="progress-bar" [style.width.%]="course.progressBarPercentage"></div>
+            <span class="progress-percentage">{{ course.progressBarPercentage | number:'1.0-0' }}%</span>
+          </div>
+          <p *ngIf="course.averageScore"><strong>Average Score:</strong> {{ course.averageScore }}%</p>
+        </div>
+      </div>
+      <div class="course-actions">
         <button
           mat-flat-button
           color="primary"
@@ -40,8 +49,8 @@
           <mat-icon>history</mat-icon>
           <span>History</span>
         </button>
-      </mat-card-actions>
-    </mat-card>
+      </div>
+    </div>
     <!-- We might need a message if allCourses is empty, but for now, omitting the no-courses message -->
   </div>
 </main>
