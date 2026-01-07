@@ -70,10 +70,12 @@
 
 /* Mat Expansion Panel Content styling */
 :host ::ng-deep .mat-expansion-panel-content {
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-top: none; /* No top border as header has one */
+  background-color: rgba(0, 0, 0, 0.4); /* Darker liquid glass background */
+  backdrop-filter: blur(25px) saturate(150%); /* Added backdrop-filter */
+  -webkit-backdrop-filter: blur(25px) saturate(150%); /* Added webkit-backdrop-filter */
   border-radius: 0 0 13px 13px; /* Match liquid glass card corners for bottom */
-  background-color: rgba(0, 0, 0, 0.3); /* Darker liquid glass for content */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* Consistent border */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); /* Added box-shadow */
   margin-bottom: 15px; /* Space between panels */
   padding: 0 24px 16px 24px; /* Adjust padding to match header */
 }
