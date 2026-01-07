@@ -66,7 +66,7 @@
   color: white !important;
 }
 :host ::ng-deep .search-liquid-glass .search-input mat-icon {
-  color: rgba(255,255,255,0.7) !important;
+  color: rgba(0,0,0,0.7) !important; /* Ensure icon is visible */
 }
 
 /* Change the default underline/border color to white (for both normal and focused states) */

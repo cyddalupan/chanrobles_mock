@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, catchError, map, of, switchMap, timer } from 'rxjs';
+import { environment } from '../../environments/environment'; // Import environment
 
 interface WeatherData {
   weather: Array<{ main: string; description: string }>;
@@ -17,8 +18,8 @@ interface UnsplashImage {
   providedIn: 'root'
 })
 export class WeatherBackgroundService {
-  private weatherProxyUrl = '/chanrobles-bar/mock/api/weather_proxy.php';
-  private imageProxyUrl = '/chanrobles-bar/mock/api/image_proxy.php';
+  private weatherProxyUrl = environment.weatherProxyUrl;
+  private imageProxyUrl = environment.imageProxyUrl;
   private currentBackgroundUrlSubject = new BehaviorSubject<string | null>(null);
   public currentBackgroundUrl$ = this.currentBackgroundUrlSubject.asObservable();
 
