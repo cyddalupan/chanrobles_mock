@@ -56927,9 +56927,9 @@ var HomeComponent = class _HomeComponent {
     }
     if (rf & 2) {
       \u0275\u0275advance(8);
-      \u0275\u0275property("ngIf", ctx.loading);
+      \u0275\u0275property("ngIf", ctx.loading());
       \u0275\u0275advance();
-      \u0275\u0275property("ngIf", !ctx.loading);
+      \u0275\u0275property("ngIf", !ctx.loading());
     }
   }, dependencies: [CommonModule, NgForOf, NgIf, MatButtonModule, MatButton, MatIconModule, MatIcon, MatCardModule, MatProgressSpinnerModule, MatProgressSpinner, MatFormFieldModule, MatFormField, MatLabel, MatSuffix, MatInputModule, MatInput, DecimalPipe], styles: ["\n\n.loading-indicator[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 200px;\n  width: 100%;\n}\n.search-bar-container[_ngcontent-%COMP%] {\n  display: flex;\n  justify-content: center;\n  padding: 20px;\n  width: 100%;\n  box-sizing: border-box;\n}\n.search-input[_ngcontent-%COMP%] {\n  width: 80%;\n  max-width: 600px;\n}\n.list-view-container[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 15px;\n  padding: 20px;\n}\n.course-list-item[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  background-color: #ffffff;\n  border-radius: 8px;\n  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n  padding: 15px;\n  transition: transform 0.2s ease-in-out;\n}\n.course-list-item[_ngcontent-%COMP%]:hover {\n  transform: translateY(-3px);\n}\n.course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n  width: 120px;\n  height: 90px;\n  object-fit: cover;\n  border-radius: 4px;\n  margin-right: 15px;\n  flex-shrink: 0;\n}\n.course-details[_ngcontent-%COMP%] {\n  flex-grow: 1;\n  display: flex;\n  flex-direction: column;\n  justify-content: center;\n  margin-right: 15px;\n}\n.course-header[_ngcontent-%COMP%] {\n  margin-bottom: 5px;\n}\n.course-title[_ngcontent-%COMP%] {\n  font-size: 1.2em;\n  font-weight: bold;\n  margin: 0;\n  color: #3f51b5;\n}\n.course-subtitle[_ngcontent-%COMP%] {\n  font-size: 0.9em;\n  color: #757575;\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  line-height: 1.4em;\n  max-height: 2.8em;\n}\n.course-meta[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 2px 0;\n  font-size: 0.85em;\n  color: #555;\n}\n.progress-bar-container[_ngcontent-%COMP%] {\n  width: 100%;\n  background-color: #e0e0e0;\n  border-radius: 5px;\n  overflow: hidden;\n  margin-top: 5px;\n  position: relative;\n  height: 20px;\n}\n.progress-bar[_ngcontent-%COMP%] {\n  height: 100%;\n  background-color: #4CAF50;\n  width: 0%;\n  text-align: center;\n  color: white;\n  line-height: 20px;\n  border-radius: 5px;\n}\n.progress-percentage[_ngcontent-%COMP%] {\n  position: absolute;\n  width: 100%;\n  text-align: center;\n  line-height: 20px;\n  color: #333;\n  font-size: 0.8em;\n  top: 0;\n  left: 0;\n}\n.course-actions[_ngcontent-%COMP%] {\n  display: flex;\n  flex-direction: column;\n  gap: 8px;\n  flex-shrink: 0;\n  min-width: 150px;\n}\n.course-actions[_ngcontent-%COMP%]   button[_ngcontent-%COMP%] {\n  font-size: 0.85rem;\n  line-height: 1.2;\n  height: 36px;\n  padding: 0 10px;\n}\n.history-button[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}\n.history-button[_ngcontent-%COMP%]   mat-icon[_ngcontent-%COMP%] {\n  margin-right: 5px;\n  font-size: 18px;\n  height: 18px;\n  width: 18px;\n}\n.no-courses[_ngcontent-%COMP%] {\n  text-align: center;\n  padding: 40px;\n  color: #999;\n  font-style: italic;\n}\n@media (max-width: 768px) {\n  .course-list-item[_ngcontent-%COMP%] {\n    flex-direction: column;\n    align-items: flex-start;\n  }\n  .course-list-item[_ngcontent-%COMP%]   .course-thumbnail-img[_ngcontent-%COMP%] {\n    width: 100%;\n    height: 150px;\n    margin-bottom: 10px;\n    margin-right: 0;\n  }\n  .course-details[_ngcontent-%COMP%] {\n    width: 100%;\n    margin-right: 0;\n    margin-bottom: 15px;\n  }\n  .course-actions[_ngcontent-%COMP%] {\n    flex-direction: row;\n    width: 100%;\n    justify-content: space-around;\n  }\n  .search-input[_ngcontent-%COMP%] {\n    width: 95%;\n  }\n}\n/*# sourceMappingURL=home.component.css.map */"] });
 };
@@ -56944,12 +56944,12 @@ var HomeComponent = class _HomeComponent {
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
   </div>
-  <div *ngIf="loading" class="loading-indicator">
+  <div *ngIf="loading()" class="loading-indicator">
     <mat-spinner></mat-spinner>
     <p>Loading courses...</p>
   </div>
 
-  <div *ngIf="!loading" class="list-view-container">
+  <div *ngIf="!loading()" class="list-view-container">
     <div *ngFor="let course of filteredCourses()" class="course-list-item">
       <img [src]="course.thumbnail" alt="Course Thumbnail" class="course-thumbnail-img">
       <div class="course-details">
