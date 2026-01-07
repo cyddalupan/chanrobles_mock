@@ -56,6 +56,10 @@
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-input {
   color: white !important;
 }
+
+.search-text-input {
+  color: white !important;
+}
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-input::placeholder {
   color: white !important;
   opacity: 1 !important; /* Ensure placeholder is fully visible */
