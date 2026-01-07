@@ -60,12 +60,15 @@
   padding: 16px 24px;
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.4); /* Liquid glass background */
+  background-color: rgba(0, 0, 0, 0.4) !important; /* Liquid glass background */
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
   border-radius: 13px 13px 0 0; /* Match liquid glass card corners */
-  color: white;
+  color: white !important;
   margin-bottom: 0; /* Remove default margin */
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-bottom: none; /* No bottom border as content will follow */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
 :host ::ng-deep .mat-expansion-panel-header:hover {
@@ -148,6 +151,7 @@
 
 .feedback-content {
   margin-top: 10px;
+  color: white !important; /* Force all text to be white */
 }
 
 /* Styling for tables within feedback content for liquid glass */
