@@ -48686,9 +48686,9 @@ function provideRouterInitializer() {
 // src/app/services/auth.service.ts
 var AuthService = class _AuthService {
   router;
-  LOGIN_URL = "https://topbarassist.com/chanrobles-bar/bar-review/login";
+  LOGIN_URL = "https://premierebarreview.com/bar-review/login";
   LOCAL_STORAGE_USER_ID_KEY = "user_id";
-  LOCAL_STORAGE_DOMAIN = "https://topbarassist.com";
+  LOCAL_STORAGE_DOMAIN = "https://premierebarreview.com";
   // Not directly used by localStorage, but for context
   constructor(router) {
     this.router = router;
@@ -49433,7 +49433,7 @@ var MatProgressSpinnerModule = class _MatProgressSpinnerModule {
 // src/environments/environment.ts
 var environment = {
   production: false,
-  API_BASE_URL: "/chanrobles-bar/mock/api"
+  API_BASE_URL: "/mock/api"
 };
 
 // src/app/services/api.service.ts
@@ -61059,9 +61059,25 @@ function ExamHistoryComponent_div_9_Template(rf, ctx) {
     \u0275\u0275elementEnd()()()();
   }
 }
-function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template(rf, ctx) {
+function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_button_31_Template(rf, ctx) {
   if (rf & 1) {
     const _r3 = \u0275\u0275getCurrentView();
+    \u0275\u0275elementStart(0, "button", 20);
+    \u0275\u0275listener("click", function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_button_31_Template_button_click_0_listener() {
+      \u0275\u0275restoreView(_r3);
+      const entry_r4 = \u0275\u0275nextContext().$implicit;
+      const ctx_r0 = \u0275\u0275nextContext(2);
+      return \u0275\u0275resetView(ctx_r0.retakeQuestion(entry_r4));
+    });
+    \u0275\u0275elementStart(1, "mat-icon");
+    \u0275\u0275text(2, "refresh");
+    \u0275\u0275elementEnd();
+    \u0275\u0275text(3, " Re-take ");
+    \u0275\u0275elementEnd();
+  }
+}
+function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template(rf, ctx) {
+  if (rf & 1) {
     \u0275\u0275elementStart(0, "mat-expansion-panel")(1, "mat-expansion-panel-header")(2, "mat-panel-title");
     \u0275\u0275text(3);
     \u0275\u0275elementEnd();
@@ -61097,17 +61113,8 @@ function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template(rf
     \u0275\u0275element(28, "div", 18);
     \u0275\u0275pipe(29, "safeHtml");
     \u0275\u0275element(30, "mat-divider");
-    \u0275\u0275elementStart(31, "button", 19);
-    \u0275\u0275listener("click", function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template_button_click_31_listener() {
-      const entry_r4 = \u0275\u0275restoreView(_r3).$implicit;
-      const ctx_r0 = \u0275\u0275nextContext(2);
-      return \u0275\u0275resetView(ctx_r0.retakeQuestion(entry_r4));
-    });
-    \u0275\u0275elementStart(32, "mat-icon");
-    \u0275\u0275text(33, "refresh");
-    \u0275\u0275elementEnd();
-    \u0275\u0275text(34, " Re-take ");
-    \u0275\u0275elementEnd()()()();
+    \u0275\u0275template(31, ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_button_31_Template, 4, 0, "button", 19);
+    \u0275\u0275elementEnd()()();
   }
   if (rf & 2) {
     const entry_r4 = ctx.$implicit;
@@ -61125,13 +61132,15 @@ function ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template(rf
     \u0275\u0275advance(5);
     \u0275\u0275textInterpolate(entry_r4.expected_answer);
     \u0275\u0275advance(4);
-    \u0275\u0275property("innerHTML", \u0275\u0275pipeBind1(29, 10, entry_r4.feedback), \u0275\u0275sanitizeHtml);
+    \u0275\u0275property("innerHTML", \u0275\u0275pipeBind1(29, 11, entry_r4.feedback), \u0275\u0275sanitizeHtml);
+    \u0275\u0275advance(3);
+    \u0275\u0275property("ngIf", false);
   }
 }
 function ExamHistoryComponent_mat_accordion_10_Template(rf, ctx) {
   if (rf & 1) {
     \u0275\u0275elementStart(0, "mat-accordion", 12);
-    \u0275\u0275template(1, ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template, 35, 12, "mat-expansion-panel", 13);
+    \u0275\u0275template(1, ExamHistoryComponent_mat_accordion_10_mat_expansion_panel_1_Template, 32, 13, "mat-expansion-panel", 13);
     \u0275\u0275elementEnd();
   }
   if (rf & 2) {
@@ -61200,7 +61209,7 @@ var ExamHistoryComponent = class _ExamHistoryComponent {
   static \u0275fac = function ExamHistoryComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _ExamHistoryComponent)(\u0275\u0275directiveInject(ActivatedRoute), \u0275\u0275directiveInject(ApiService), \u0275\u0275directiveInject(AuthService), \u0275\u0275directiveInject(Router));
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ExamHistoryComponent, selectors: [["app-exam-history"]], decls: 11, vars: 4, consts: [["color", "primary"], ["mat-icon-button", "", 3, "click"], [1, "exam-history-container"], ["class", "loading-indicator", 4, "ngIf"], ["class", "error-card", 4, "ngIf"], ["class", "no-history-message", 4, "ngIf"], ["class", "history-accordion", 4, "ngIf"], [1, "loading-indicator"], [1, "error-card"], ["color", "warn"], [1, "no-history-message"], ["mat-flat-button", "", "color", "primary", 3, "click"], [1, "history-accordion"], [4, "ngFor", "ngForOf"], [1, "history-detail-card"], [1, "question-text-container"], [1, "user-answer-text"], [1, "expected-answer-text"], [1, "feedback-content", 3, "innerHTML"], ["mat-flat-button", "", "color", "accent", 1, "retake-button", 3, "click"]], template: function ExamHistoryComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _ExamHistoryComponent, selectors: [["app-exam-history"]], decls: 11, vars: 4, consts: [["color", "primary"], ["mat-icon-button", "", 3, "click"], [1, "exam-history-container"], ["class", "loading-indicator", 4, "ngIf"], ["class", "error-card", 4, "ngIf"], ["class", "no-history-message", 4, "ngIf"], ["class", "history-accordion", 4, "ngIf"], [1, "loading-indicator"], [1, "error-card"], ["color", "warn"], [1, "no-history-message"], ["mat-flat-button", "", "color", "primary", 3, "click"], [1, "history-accordion"], [4, "ngFor", "ngForOf"], [1, "history-detail-card"], [1, "question-text-container"], [1, "user-answer-text"], [1, "expected-answer-text"], [1, "feedback-content", 3, "innerHTML"], ["mat-flat-button", "", "color", "accent", "class", "retake-button", 3, "click", 4, "ngIf"], ["mat-flat-button", "", "color", "accent", 1, "retake-button", 3, "click"]], template: function ExamHistoryComponent_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275elementStart(0, "mat-toolbar", 0)(1, "button", 1);
       \u0275\u0275listener("click", function ExamHistoryComponent_Template_button_click_1_listener() {
@@ -61268,7 +61277,7 @@ var ExamHistoryComponent = class _ExamHistoryComponent {
       MatListModule,
       MatToolbarModule,
       SafeHtmlPipe
-    ], template: '<mat-toolbar color="primary">\n  <button mat-icon-button (click)="goBack()">\n    <mat-icon>arrow_back</mat-icon>\n  </button>\n  <span>Exam History</span>\n</mat-toolbar>\n\n<div class="exam-history-container">\n  <div *ngIf="loading" class="loading-indicator">\n    <mat-spinner></mat-spinner>\n    <p>Loading exam history...</p>\n  </div>\n\n  <mat-card *ngIf="error" class="error-card">\n    <mat-card-content>\n      <mat-icon color="warn">error</mat-icon>\n      <p>{{ error }}</p>\n    </mat-card-content>\n  </mat-card>\n\n  <div *ngIf="!loading && !error && historyEntries.length === 0" class="no-history-message">\n    <mat-card>\n      <mat-card-content>\n        <p>No exam history found for this course.</p>\n        <button mat-flat-button color="primary" (click)="goBack()">Go Back</button>\n      </mat-card-content>\n    </mat-card>\n  </div>\n\n  <mat-accordion *ngIf="!loading && !error && historyEntries.length > 0" class="history-accordion">\n    <mat-expansion-panel *ngFor="let entry of historyEntries; let i = index">\n      <mat-expansion-panel-header>\n        <mat-panel-title>\n          Question {{ i + 1 }}\n        </mat-panel-title>\n        <mat-panel-description>\n          Score: <span [class.score-pass]="entry.score >= 75" [class.score-fail]="entry.score < 75">{{ entry.score }}%</span>\n        </mat-panel-description>\n      </mat-expansion-panel-header>\n\n      <mat-card class="history-detail-card">\n        <mat-card-content>\n          <div class="question-text-container">\n            <h3>Question:</h3>\n            <p>{{ entry.question_text }}</p>\n          </div>\n          <mat-divider></mat-divider>\n\n          <h3>Your Answer:</h3>\n          <p class="user-answer-text">{{ entry.user_answer }}</p>\n          <mat-divider></mat-divider>\n\n          <h3>Expected Answer:</h3>\n          <p class="expected-answer-text">{{ entry.expected_answer }}</p>\n          <mat-divider></mat-divider>\n\n          <h3>Feedback:</h3>\n          <div class="feedback-content" [innerHTML]="entry.feedback | safeHtml"></div>\n          <mat-divider></mat-divider>\n          <button mat-flat-button color="accent" (click)="retakeQuestion(entry)" class="retake-button">\n            <mat-icon>refresh</mat-icon> Re-take\n          </button>\n        </mat-card-content>\n      </mat-card>\n    </mat-expansion-panel>\n  </mat-accordion>\n</div>\n', styles: ["/* src/app/exam-history/exam-history.css */\n.exam-history-container {\n  padding: 20px;\n  max-width: 900px;\n  margin: 20px auto;\n}\n.loading-indicator,\n.no-history-message {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px;\n  text-align: center;\n}\n.error-card {\n  margin: 20px 0;\n  color: #f44336;\n  border: 1px solid #f44336;\n}\n.error-card mat-card-content {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n.error-card mat-icon {\n  font-size: 30px;\n  width: 30px;\n  height: 30px;\n}\n.history-accordion {\n  margin-top: 20px;\n}\n.mat-expansion-panel-header {\n  padding: 16px 24px;\n  display: flex;\n  align-items: center;\n}\n.mat-panel-title {\n  font-weight: 500;\n  color: var(--mdc-typography-headline-small-color);\n}\n.mat-panel-description {\n  justify-content: flex-end;\n  align-items: center;\n  gap: 10px;\n}\n.question-text-container {\n  background-color: #f5f5f5;\n  padding: 16px;\n  border-radius: 4px;\n  margin-bottom: 16px;\n}\n.question-text-container h3 {\n  margin-top: 0;\n}\n.score-pass {\n  color: #4CAF50;\n  font-weight: bold;\n}\n.score-fail {\n  color: #f44336;\n  font-weight: bold;\n}\n.history-detail-card {\n  margin: 10px 0;\n}\n.history-detail-card h3 {\n  color: var(--mdc-typography-body-large-color);\n  margin-top: 20px;\n  margin-bottom: 10px;\n}\n.history-detail-card p {\n  white-space: pre-wrap;\n  word-wrap: break-word;\n  color: var(--mdc-typography-body-medium-color);\n  margin-bottom: 15px;\n}\n.feedback-content {\n  margin-top: 10px;\n}\n.feedback-content table {\n  width: 100%;\n  border-collapse: collapse;\n  margin-top: 15px;\n}\n.feedback-content th,\n.feedback-content td {\n  border: 1px solid #ddd;\n  padding: 8px;\n  text-align: left;\n}\n.feedback-content th {\n  background-color: #f2f2f2;\n  font-weight: bold;\n}\n.feedback-content tr:nth-child(even) {\n  background-color: #f9f9f9;\n}\n.feedback-content ul {\n  list-style-type: disc;\n  padding-left: 20px;\n  margin-top: 10px;\n}\n.feedback-content ol {\n  list-style-type: decimal;\n  padding-left: 20px;\n  margin-top: 10px;\n}\n.retake-button {\n  margin-top: 16px;\n}\n/*# sourceMappingURL=exam-history.css.map */\n"] }]
+    ], template: '<mat-toolbar color="primary">\n  <button mat-icon-button (click)="goBack()">\n    <mat-icon>arrow_back</mat-icon>\n  </button>\n  <span>Exam History</span>\n</mat-toolbar>\n\n<div class="exam-history-container">\n  <div *ngIf="loading" class="loading-indicator">\n    <mat-spinner></mat-spinner>\n    <p>Loading exam history...</p>\n  </div>\n\n  <mat-card *ngIf="error" class="error-card">\n    <mat-card-content>\n      <mat-icon color="warn">error</mat-icon>\n      <p>{{ error }}</p>\n    </mat-card-content>\n  </mat-card>\n\n  <div *ngIf="!loading && !error && historyEntries.length === 0" class="no-history-message">\n    <mat-card>\n      <mat-card-content>\n        <p>No exam history found for this course.</p>\n        <button mat-flat-button color="primary" (click)="goBack()">Go Back</button>\n      </mat-card-content>\n    </mat-card>\n  </div>\n\n  <mat-accordion *ngIf="!loading && !error && historyEntries.length > 0" class="history-accordion">\n    <mat-expansion-panel *ngFor="let entry of historyEntries; let i = index">\n      <mat-expansion-panel-header>\n        <mat-panel-title>\n          Question {{ i + 1 }}\n        </mat-panel-title>\n        <mat-panel-description>\n          Score: <span [class.score-pass]="entry.score >= 75" [class.score-fail]="entry.score < 75">{{ entry.score }}%</span>\n        </mat-panel-description>\n      </mat-expansion-panel-header>\n\n      <mat-card class="history-detail-card">\n        <mat-card-content>\n          <div class="question-text-container">\n            <h3>Question:</h3>\n            <p>{{ entry.question_text }}</p>\n          </div>\n          <mat-divider></mat-divider>\n\n          <h3>Your Answer:</h3>\n          <p class="user-answer-text">{{ entry.user_answer }}</p>\n          <mat-divider></mat-divider>\n\n          <h3>Expected Answer:</h3>\n          <p class="expected-answer-text">{{ entry.expected_answer }}</p>\n          <mat-divider></mat-divider>\n\n          <h3>Feedback:</h3>\n          <div class="feedback-content" [innerHTML]="entry.feedback | safeHtml"></div>\n          <mat-divider></mat-divider>\n          <button mat-flat-button color="accent" (click)="retakeQuestion(entry)" class="retake-button" *ngIf="false">\n            <mat-icon>refresh</mat-icon> Re-take\n          </button>\n        </mat-card-content>\n      </mat-card>\n    </mat-expansion-panel>\n  </mat-accordion>\n</div>\n', styles: ["/* src/app/exam-history/exam-history.css */\n.exam-history-container {\n  padding: 20px;\n  max-width: 900px;\n  margin: 20px auto;\n}\n.loading-indicator,\n.no-history-message {\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  padding: 40px;\n  text-align: center;\n}\n.error-card {\n  margin: 20px 0;\n  color: #f44336;\n  border: 1px solid #f44336;\n}\n.error-card mat-card-content {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n}\n.error-card mat-icon {\n  font-size: 30px;\n  width: 30px;\n  height: 30px;\n}\n.history-accordion {\n  margin-top: 20px;\n}\n.mat-expansion-panel-header {\n  padding: 16px 24px;\n  display: flex;\n  align-items: center;\n}\n.mat-panel-title {\n  font-weight: 500;\n  color: var(--mdc-typography-headline-small-color);\n}\n.mat-panel-description {\n  justify-content: flex-end;\n  align-items: center;\n  gap: 10px;\n}\n.question-text-container {\n  background-color: #f5f5f5;\n  padding: 16px;\n  border-radius: 4px;\n  margin-bottom: 16px;\n}\n.question-text-container h3 {\n  margin-top: 0;\n}\n.score-pass {\n  color: #4CAF50;\n  font-weight: bold;\n}\n.score-fail {\n  color: #f44336;\n  font-weight: bold;\n}\n.history-detail-card {\n  margin: 10px 0;\n}\n.history-detail-card h3 {\n  color: var(--mdc-typography-body-large-color);\n  margin-top: 20px;\n  margin-bottom: 10px;\n}\n.history-detail-card p {\n  white-space: pre-wrap;\n  word-wrap: break-word;\n  color: var(--mdc-typography-body-medium-color);\n  margin-bottom: 15px;\n}\n.feedback-content {\n  margin-top: 10px;\n}\n.feedback-content table {\n  width: 100%;\n  border-collapse: collapse;\n  margin-top: 15px;\n}\n.feedback-content th,\n.feedback-content td {\n  border: 1px solid #ddd;\n  padding: 8px;\n  text-align: left;\n}\n.feedback-content th {\n  background-color: #f2f2f2;\n  font-weight: bold;\n}\n.feedback-content tr:nth-child(even) {\n  background-color: #f9f9f9;\n}\n.feedback-content ul {\n  list-style-type: disc;\n  padding-left: 20px;\n  margin-top: 10px;\n}\n.feedback-content ol {\n  list-style-type: decimal;\n  padding-left: 20px;\n  margin-top: 10px;\n}\n.retake-button {\n  margin-top: 16px;\n}\n/*# sourceMappingURL=exam-history.css.map */\n"] }]
   }], () => [{ type: ActivatedRoute }, { type: ApiService }, { type: AuthService }, { type: Router }], null);
 })();
 (() => {
@@ -61638,7 +61647,7 @@ var HeaderComponent = class _HeaderComponent {
   static \u0275fac = function HeaderComponent_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _HeaderComponent)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HeaderComponent, selectors: [["app-header"]], decls: 7, vars: 0, consts: [[1, "hero"], ["src", "https://topbarassist.com/chanrobles-bar/mock/img/banner.jpg", 2, "width", "400px"], ["href", "https://premierebarreview.com/"], [1, "btn-primary"], [2, "clear", "both", "height", "1px"]], template: function HeaderComponent_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _HeaderComponent, selectors: [["app-header"]], decls: 7, vars: 0, consts: [[1, "hero"], ["src", "http://premierebarreview.com/premier.png", 2, "width", "400px"], ["href", "https://premierebarreview.com/"], [1, "btn-primary"], [2, "clear", "both", "height", "1px"]], template: function HeaderComponent_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275domElementStart(0, "section", 0);
       \u0275\u0275domElement(1, "img", 1)(2, "br");
@@ -61652,7 +61661,7 @@ var HeaderComponent = class _HeaderComponent {
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(HeaderComponent, [{
     type: Component,
-    args: [{ selector: "app-header", standalone: true, imports: [CommonModule], template: '<section class="hero">\n<img src="https://topbarassist.com/chanrobles-bar/mock/img/banner.jpg" style="width:400px">\n<br>\n\n<a href="https://premierebarreview.com/"><button class="btn-primary">Back to Home</button> </a> \n\n</section>\n\n<div style="clear:both;height:1px"></div>\n', styles: ["/* src/app/header/header.component.css */\n/*# sourceMappingURL=header.component.css.map */\n"] }]
+    args: [{ selector: "app-header", standalone: true, imports: [CommonModule], template: '<section class="hero">\n<img src="http://premierebarreview.com/premier.png" style="width:400px">\n<br>\n\n<a href="https://premierebarreview.com/"><button class="btn-primary">Back to Home</button> </a> \n\n</section>\n\n<div style="clear:both;height:1px"></div>\n', styles: ["/* src/app/header/header.component.css */\n/*# sourceMappingURL=header.component.css.map */\n"] }]
   }], null, null);
 })();
 (() => {
@@ -61665,26 +61674,32 @@ var App = class _App {
   static \u0275fac = function App_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _App)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _App, selectors: [["app-root"]], decls: 2, vars: 0, template: function App_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _App, selectors: [["app-root"]], decls: 6, vars: 0, consts: [[2, "background-color", "#1e6328", "color", "white", "padding", "20px", "text-align", "center"]], template: function App_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275elementStart(0, "div");
-      \u0275\u0275element(1, "router-outlet");
-      \u0275\u0275elementEnd();
+      \u0275\u0275element(1, "app-header")(2, "router-outlet");
+      \u0275\u0275elementStart(3, "footer", 0)(4, "p");
+      \u0275\u0275text(5, "\xA9 premierebarreview 2025");
+      \u0275\u0275elementEnd()()();
     }
-  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet], encapsulation: 2 });
+  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet, HeaderComponent], encapsulation: 2 });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(App, [{
     type: Component,
     args: [{ selector: "app-root", standalone: true, imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet, HeaderComponent], template: `
     <div>
+      <app-header></app-header>
       <router-outlet></router-outlet>
+      <footer style="background-color: #1e6328; color: white; padding: 20px; text-align: center;">
+        <p>&copy; premierebarreview 2025</p>
+      </footer>
     </div>
   ` }]
   }], null, null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 20 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 24 });
 })();
 
 // src/main.ts

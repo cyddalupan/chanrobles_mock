@@ -5,6 +5,7 @@ set -e
 
 echo "--- Building Angular application ---"
 cd angular
+npm install
 npm run build
 cd ..
 
