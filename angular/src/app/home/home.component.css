@@ -51,26 +51,28 @@
   display: none !important;
 }
 
-/* Text and icon colors */
-:host ::ng-deep .search-liquid-glass .search-input .mat-input-element,
-:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-label {
-  color: white !important; /* Ensure text is visible */
+/* Text, placeholder and icon colors for mat-mdc-form-field */
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-input {
+  color: white !important;
 }
-:host ::ng-deep .search-liquid-glass .search-input .mat-input-element::placeholder {
-  color: rgba(255, 255, 255, 0.7) !important; /* White placeholder color */
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-input::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important; /* Ensure placeholder is fully visible */
+}
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-label {
+  color: white !important;
+}
+:host ::ng-deep .search-liquid-glass .search-input.mat-focused .mat-mdc-form-field-label {
+  color: white !important;
 }
 :host ::ng-deep .search-liquid-glass .search-input mat-icon {
-  color: rgba(255,255,255,0.7) !important; /* Ensure icon is visible */
+  color: rgba(255,255,255,0.7) !important;
 }
 
-/* Change the default underline/border color to white */
-:host ::ng-deep .search-liquid-glass .search-input .mat-form-field-underline {
+/* Change the default underline/border color to white (for both normal and focused states) */
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-underline,
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-ripple {
   background-color: rgba(255, 255, 255, 0.7) !important;
-}
-
-/* Change the focused underline/border color to white */
-:host ::ng-deep .search-liquid-glass .search-input.mat-focused .mat-form-field-ripple {
-  background-color: white !important;
 }
 
 /* Responsive adjustments */
