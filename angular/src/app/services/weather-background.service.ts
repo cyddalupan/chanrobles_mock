@@ -17,8 +17,8 @@ interface UnsplashImage {
   providedIn: 'root'
 })
 export class WeatherBackgroundService {
-  private weatherProxyUrl = '/api/weather_proxy.php';
-  private imageProxyUrl = '/api/image_proxy.php';
+  private weatherProxyUrl = '/chanrobles-bar/mock/api/weather_proxy.php';
+  private imageProxyUrl = '/chanrobles-bar/mock/api/image_proxy.php';
   private currentBackgroundUrlSubject = new BehaviorSubject<string | null>(null);
   public currentBackgroundUrl$ = this.currentBackgroundUrlSubject.asObservable();
 

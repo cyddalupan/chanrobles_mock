@@ -61710,8 +61710,8 @@ var HeaderComponent = class _HeaderComponent {
 // src/app/services/weather-background.service.ts
 var WeatherBackgroundService = class _WeatherBackgroundService {
   http;
-  weatherProxyUrl = "/api/weather_proxy.php";
-  imageProxyUrl = "/api/image_proxy.php";
+  weatherProxyUrl = "/chanrobles-bar/mock/api/weather_proxy.php";
+  imageProxyUrl = "/chanrobles-bar/mock/api/image_proxy.php";
   currentBackgroundUrlSubject = new BehaviorSubject(null);
   currentBackgroundUrl$ = this.currentBackgroundUrlSubject.asObservable();
   constructor(http) {
