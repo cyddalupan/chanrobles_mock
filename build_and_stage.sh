@@ -5,7 +5,6 @@ set -e
 
 echo "--- Building Angular application ---"
 cd angular
-npm install
 npm run build
 cd ..
 
@@ -16,6 +15,6 @@ echo "--- Committing changes ---"
 git commit -m "feat: Automated build and stage for Angular application changes"
 
 echo "--- Pushing changes to remote ---"
-git push origin main
+git push origin master
 
 echo "--- Build, staging, commit, and push complete. ---"
