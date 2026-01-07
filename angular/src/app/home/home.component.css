@@ -1,0 +1,142 @@
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px; /* Adjust height as needed */
+  width: 100%;
+}
+
+.all-course-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Keep gap for spacing */
+  justify-content: center;
+  align-items: stretch; /* Ensures cards in the same row have equal height */
+  padding: 20px; /* Add padding around the container */
+}
+
+.course-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensures all cards in a row try to match height */
+  overflow: hidden; /* Ensure content stays within card boundaries */
+  flex-basis: 300px; /* Base width for each card */
+  max-width: 350px; /* Maximum width for each card */
+}
+
+.course-card .course-thumbnail-img {
+  height: 200px; /* Fixed height for images */
+  object-fit: cover; /* Ensure images cover the area without distortion */
+  width: 100%; /* Ensure image takes full width of the card */
+}
+
+.course-card mat-card-header {
+  padding-bottom: 0;
+}
+
+.course-card mat-card-title {
+  font-size: 1em;
+  font-weight: bold;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow content */
+  text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+}
+
+.course-card mat-card-subtitle {
+  font-size: 0.8em;
+  color: #757575;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limit to 2 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.8em; /* Approximate height for two lines of text */
+  line-height: 1.4em; /* Ensure consistent line height */
+}
+
+.course-card mat-card-content {
+  flex-grow: 1; /* Allows content to expand */
+  padding-top: 10px;
+}
+
+.course-card mat-card-actions {
+  display: flex;
+  justify-content: space-around; /* Distribute buttons with space */
+  align-items: center; /* Vertically align the button */
+  padding: 16px;
+  min-height: 60px; /* Fixed height for consistency */
+}
+
+.course-actions {
+  display: flex;
+  justify-content: space-around; /* Distribute buttons with space */
+  align-items: center;
+  width: 100%;
+  gap: 8px; /* Add a gap between buttons */
+}
+
+.course-actions button {
+  font-size: 0.85rem; /* Smaller font size for all buttons */
+  line-height: 1.2;
+}
+
+.history-button {
+  display: flex;
+  align-items: center;
+}
+
+.history-button mat-icon {
+  margin-right: 5px; /* Reduced space between icon and text */
+  font-size: 18px; /* Smaller icon size */
+  height: 18px;
+  width: 18px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+  position: relative;
+  height: 20px; /* Fixed height for the progress bar */
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4CAF50; /* Green color for progress */
+  width: 0%; /* Initial width, will be set by Angular */
+  text-align: center;
+  color: white;
+  line-height: 20px; /* Center text vertically */
+  border-radius: 5px;
+}
+
+.progress-percentage {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  line-height: 20px; /* Center text vertically over the bar */
+  color: #333; /* Darker color for percentage text */
+  font-size: 0.8em;
+  top: 0;
+  left: 0;
+}
+
+.no-courses {
+  text-align: center;
+  grid-column: 1 / -1; /* Center across all columns */
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  background-color: #f0f0f0;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
+}

@@ -1,0 +1,28 @@
+# Environments
+.env
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+/vendor/
+
+# Testing
+/coverage
+/.nyc_output
+
+# Production
+# /dist (User explicitly requested not to ignore build output)
+# /build (User explicitly requested not to ignore build output)
+
+
+# Misc
+.DS_Store
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea/
+.vscode/
+*.tgz
+.angular/
