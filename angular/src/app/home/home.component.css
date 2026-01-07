@@ -7,42 +7,53 @@
   width: 100%;
 }
 
-/* Search Bar Styling */
+/* --- Search Bar Styling (Final Centering Attempt) --- */
+
+/* 1. Main container for centering the form field. */
 .search-bar-container {
   display: flex;
   justify-content: center;
+  align-items: center; /* This should vertically center the mat-form-field */
   padding: 20px 10px;
   margin-bottom: 20px;
 }
 
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
+/* 2. Style the mat-form-field directly. */
+.search-input {
   width: 100%;
   max-width: 600px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  padding: 0 15px;
-  min-height: 56px;
 }
 
-.search-input {
-    width: 100%;
-}
+/* 3. Use ::ng-deep to apply styles to the *internal* flex container of the mat-form-field.
+      This is the most reliable way to control its appearance and padding. */
 
 :host ::ng-deep .search-input .mat-form-field-wrapper {
-    padding: 0;
+  padding: 0; /* Reset wrapper padding */
 }
-:host ::ng-deep .search-input .mat-form-field-infix {
-    border-top: none;
-    padding: 8px 0;
+
+:host ::ng-deep .search-input .mat-form-field-flex {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    /* This padding creates the balanced space *inside* the white box, around the text */
+    padding: 0 20px;
+    align-items: center; /* Vertically center the items inside the flex container */
+    height: 56px; /* Give it a fixed height */
 }
-:host ::ng-deep .search-input .mat-form-field-underline,
-:host ::ng-deep .search-input .mat-form-field-outline {
+
+/* Remove the default outline and underline that cause visual glitches */
+:host ::ng-deep .search-input .mat-form-field-outline,
+:host ::ng-deep .search-input .mat-form-field-underline {
     display: none !important;
 }
 
+/* Adjust the infix to remove its own padding/border that can interfere */
+:host ::ng-deep .search-input .mat-form-field-infix {
+    border-top: none;
+    padding: 0; /* Infix padding is handled by the parent flex container now */
+}
+
+/* 4. Style the text and icon for readability */
 .search-input .mat-input-element,
 :host ::ng-deep .search-input .mat-form-field-label {
     color: black !important;
@@ -51,129 +62,62 @@
     color: rgba(0,0,0,0.7) !important;
 }
 
-.all-course-cards-container {
+
+/* 1. Main container for centering the whole component. */
+.search-bar-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px; /* Keep gap for spacing */
   justify-content: center;
-  align-items: stretch; /* Ensures cards in the same row have equal height */
-  padding: 20px; /* Add padding around the container */
+  padding: 20px 10px;
+  margin-bottom: 20px;
 }
 
-.course-card {
+/* 2. This is the visible white box. It's a flex container to center the form field. */
+.search-input-wrapper {
   display: flex;
-  flex-direction: column;
-  height: 100%; /* Ensures all cards in a row try to match height */
-  overflow: hidden; /* Ensure content stays within card boundaries */
-  flex-basis: 300px; /* Base width for each card */
-  max-width: 350px; /* Maximum width for each card */
-}
-
-.course-card .course-thumbnail-img {
-  height: 200px; /* Fixed height for images */
-  object-fit: cover; /* Ensure images cover the area without distortion */
-  width: 100%; /* Ensure image takes full width of the card */
-}
-
-.course-card mat-card-header {
-  padding-bottom: 0;
-}
-
-.course-card mat-card-title {
-  font-size: 1em;
-  font-weight: bold;
-  white-space: nowrap; /* Prevent text from wrapping */
-  overflow: hidden; /* Hide overflow content */
-  text-overflow: ellipsis; /* Add ellipsis for overflowed text */
-}
-
-.course-card mat-card-subtitle {
-  font-size: 0.8em;
-  color: #757575;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* Limit to 2 lines */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: 2.8em; /* Approximate height for two lines of text */
-  line-height: 1.4em; /* Ensure consistent line height */
-}
-
-.course-card mat-card-content {
-  flex-grow: 1; /* Allows content to expand */
-  padding-top: 10px;
-}
-
-.course-card mat-card-actions {
-  display: flex;
-  justify-content: space-around; /* Distribute buttons with space */
-  align-items: center; /* Vertically align the button */
-  padding: 16px;
-  min-height: 60px; /* Fixed height for consistency */
-}
-
-.course-actions {
-  display: flex;
-  justify-content: space-around; /* Distribute buttons with space */
-  align-items: center;
+  align-items: center; /* This is what should vertically center the mat-form-field */
   width: 100%;
-  gap: 8px; /* Add a gap between buttons */
+  max-width: 600px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  /* The padding is important. It creates the space for the form field to be centered in. */
+  padding: 0 15px;
+  /* Let's set a min-height to ensure the vertical centering has space to work with. */
+  min-height: 56px; /* A typical height for a text field area */
 }
 
-.course-actions button {
-  font-size: 0.85rem; /* Smaller font size for all buttons */
-  line-height: 1.2;
+/* 3. The mat-form-field itself. It should take up the full width. */
+.search-input {
+    width: 100%;
 }
 
-.history-button {
-  display: flex;
-  align-items: center;
+/* 4. Overrides to make the mat-form-field 'invisible' within its styled wrapper */
+:host ::ng-deep .search-input .mat-form-field-wrapper {
+    padding: 0; /* Remove default padding */
+}
+:host ::ng-deep .search-input .mat-form-field-infix {
+    border-top: none; /* Remove default border */
+    padding: 8px 0; /* Minimal vertical padding for the text itself */
+}
+:host ::ng-deep .search-input .mat-form-field-underline,
+:host ::ng-deep .search-input .mat-form-field-outline {
+    display: none !important; /* Hide outline and underline */
 }
 
-.history-button mat-icon {
-  margin-right: 5px; /* Reduced space between icon and text */
-  font-size: 18px; /* Smaller icon size */
-  height: 18px;
-  width: 18px;
+/* 5. Text and icon colors for readability */
+.search-input .mat-input-element,
+:host ::ng-deep .search-input .mat-form-field-label {
+    color: black !important;
+}
+.search-input mat-icon {
+    color: rgba(0,0,0,0.7) !important;
 }
 
-.progress-bar-container {
-  width: 100%;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-top: 5px;
-  position: relative;
-  height: 20px; /* Fixed height for the progress bar */
-}
 
-.progress-bar {
-  height: 100%;
-  background-color: #4CAF50; /* Green color for progress */
-  width: 0%; /* Initial width, will be set by Angular */
-  text-align: center;
-  color: white;
-  line-height: 20px; /* Center text vertically */
-  border-radius: 5px;
-}
 
-.progress-percentage {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  line-height: 20px; /* Center text vertically over the bar */
-  color: #333; /* Darker color for percentage text */
-  font-size: 0.8em;
-  top: 0;
-  left: 0;
-}
-
-.no-courses {
-  text-align: center;
-  grid-column: 1 / -1; /* Center across all columns */
-  padding: 40px;
-  color: #999;
-  font-style: italic;
+.search-input {
+  width: 80%; /* Adjust width as needed */
+  max-width: 600px; /* Max width for larger screens */
 }
 
 .list-view-container {
@@ -244,6 +188,37 @@
   color: #555;
 }
 
+.progress-bar-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-top: 5px;
+  position: relative;
+  height: 20px; /* Fixed height for the progress bar */
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4CAF50; /* Green color for progress */
+  width: 0%; /* Initial width, will be set by Angular */
+  text-align: center;
+  color: white;
+  line-height: 20px; /* Center text vertically */
+  border-radius: 5px;
+}
+
+.progress-percentage {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  line-height: 20px; /* Center text vertically over the bar */
+  color: #333; /* Darker color for percentage text */
+  font-size: 0.8em;
+  top: 0;
+  left: 0;
+}
+
 .course-actions {
   display: flex;
   flex-direction: column; /* Stack buttons vertically */
@@ -279,66 +254,6 @@
   font-style: italic;
 }
 
-footer {
-  text-align: center;
-  padding: 20px;
-  margin-top: 40px;
-  background-color: #f0f0f0;
-  color: #666;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* Liquid Glass Notification Styles */
-.liquid-glass-notification {
-  position: fixed; /* Fixed position to stay at the bottom */
-  bottom: 20px; /* 20px from the bottom */
-  left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Adjust for perfect centering */
-  width: 90%; /* Occupy 90% of the width */
-  max-width: 400px; /* Max width for larger screens */
-  background-color: rgba(255, 255, 255, 0.2); /* Transparent white background */
-  backdrop-filter: blur(10px) saturate(150%); /* Liquid glass effect */
-  -webkit-backdrop-filter: blur(10px) saturate(150%); /* Safari support */
-  border-radius: 15px; /* Rounded corners */
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle white border */
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  color: #333; /* Darker text for readability */
-  font-family: 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; /* Apple-like font stack */
-  z-index: 1000; /* Ensure it stays on top */
-}
-
-.notification-content {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.notification-image {
-  width: 60px; /* Size of the image */
-  height: 60px;
-  border-radius: 10px; /* Rounded corners for the image */
-  object-fit: cover; /* Cover the area */
-  margin-right: 15px;
-  flex-shrink: 0; /* Prevent image from shrinking */
-}
-
-.notification-text h3 {
-  margin: 0;
-  font-size: 1.1em;
-  font-weight: 600; /* Semi-bold */
-  color: #1a1a1a;
-}
-
-.notification-text p {
-  margin: 5px 0 0;
-  font-size: 0.9em;
-  line-height: 1.3;
-  color: #4a4a4a;
-}
-
 /* Responsive Adjustments */
 @media (max-width: 768px) {
   .course-list-item {
@@ -367,24 +282,5 @@ footer {
 
   .search-input {
     width: 95%; /* Adjust width for smaller screens */
-  }
-}
-
-@media (max-width: 600px) {
-  .liquid-glass-notification {
-    width: 95%;
-    bottom: 15px;
-    padding: 12px;
-  }
-  .notification-image {
-    width: 50px;
-    height: 50px;
-    margin-right: 10px;
-  }
-  .notification-text h3 {
-    font-size: 1em;
-  }
-  .notification-text p {
-    font-size: 0.85em;
   }
 }
