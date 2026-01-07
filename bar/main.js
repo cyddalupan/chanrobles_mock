@@ -61713,13 +61713,21 @@ var App = class _App {
   static \u0275fac = function App_Factory(__ngFactoryType__) {
     return new (__ngFactoryType__ || _App)();
   };
-  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _App, selectors: [["app-root"]], decls: 2, vars: 0, template: function App_Template(rf, ctx) {
+  static \u0275cmp = /* @__PURE__ */ \u0275\u0275defineComponent({ type: _App, selectors: [["app-root"]], decls: 10, vars: 0, consts: [[1, "liquid-glass-notification"], [1, "notification-content"], ["src", "https://topbarassist.com/chanrobles-bar/mock/img/civillaw.jpg", "alt", "Notification Image", 1, "notification-image"], [1, "notification-text"]], template: function App_Template(rf, ctx) {
     if (rf & 1) {
       \u0275\u0275elementStart(0, "div");
       \u0275\u0275element(1, "router-outlet");
       \u0275\u0275elementEnd();
+      \u0275\u0275elementStart(2, "div", 0)(3, "div", 1);
+      \u0275\u0275element(4, "img", 2);
+      \u0275\u0275elementStart(5, "div", 3)(6, "h3");
+      \u0275\u0275text(7, "New Feature Alert!");
+      \u0275\u0275elementEnd();
+      \u0275\u0275elementStart(8, "p");
+      \u0275\u0275text(9, "Explore our new interactive study guides and master civil law concepts with ease.");
+      \u0275\u0275elementEnd()()()();
     }
-  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet], encapsulation: 2 });
+  }, dependencies: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, RouterOutlet], styles: ['\n\n[_nghost-%COMP%]   .liquid-glass-notification[_ngcontent-%COMP%] {\n  position: fixed;\n  bottom: 20px;\n  left: 50%;\n  transform: translateX(-50%);\n  width: 90%;\n  max-width: 400px;\n  background-color: rgba(255, 255, 255, 0.6);\n  backdrop-filter: blur(20px) saturate(200%);\n  -webkit-backdrop-filter: blur(20px) saturate(200%);\n  border-radius: 13px;\n  border: 1px solid rgba(255, 255, 255, 0.8);\n  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);\n  padding: 12px 18px;\n  display: flex;\n  align-items: center;\n  z-index: 1000;\n  color: white;\n  font-family:\n    "SF Pro Text",\n    "Helvetica Neue",\n    "Helvetica",\n    "Arial",\n    sans-serif;\n}\n[_nghost-%COMP%]   .notification-content[_ngcontent-%COMP%] {\n  display: flex;\n  align-items: center;\n  width: 100%;\n}\n[_nghost-%COMP%]   .notification-image[_ngcontent-%COMP%] {\n  width: 48px;\n  height: 48px;\n  border-radius: 10px;\n  object-fit: cover;\n  margin-right: 12px;\n  flex-shrink: 0;\n}\n[_nghost-%COMP%]   .notification-text[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n  margin: 0;\n  font-size: 16px;\n  font-weight: 600;\n  color: white;\n  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n}\n[_nghost-%COMP%]   .notification-text[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n  margin: 5px 0 0;\n  font-size: 13px;\n  line-height: 1.3;\n  color: rgba(255, 255, 255, 0.8);\n  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n}\n@media (max-width: 600px) {\n  [_nghost-%COMP%]   .liquid-glass-notification[_ngcontent-%COMP%] {\n    width: 95%;\n    padding: 12px;\n    bottom: 15px;\n  }\n  [_nghost-%COMP%]   .notification-image[_ngcontent-%COMP%] {\n    width: 40px;\n    height: 40px;\n    margin-right: 10px;\n  }\n  [_nghost-%COMP%]   .notification-text[_ngcontent-%COMP%]   h3[_ngcontent-%COMP%] {\n    font-size: 14px;\n  }\n  [_nghost-%COMP%]   .notification-text[_ngcontent-%COMP%]   p[_ngcontent-%COMP%] {\n    font-size: 12px;\n  }\n}\n/*# sourceMappingURL=app.css.map */'] });
 };
 (() => {
   (typeof ngDevMode === "undefined" || ngDevMode) && setClassMetadata(App, [{
@@ -61728,11 +61736,20 @@ var App = class _App {
     <div>
       <router-outlet></router-outlet>
     </div>
-  ` }]
+    <div class="liquid-glass-notification">
+      <div class="notification-content">
+        <img src="https://topbarassist.com/chanrobles-bar/mock/img/civillaw.jpg" alt="Notification Image" class="notification-image">
+        <div class="notification-text">
+          <h3>New Feature Alert!</h3>
+          <p>Explore our new interactive study guides and master civil law concepts with ease.</p>
+        </div>
+      </div>
+    </div>
+  `, styles: ['/* angular:styles/component:css;f2f8349a184c61fa49be1a643a4c0c72386f78449d6b5a75b50fef097b816070;/Users/cyd/code/chanrobles/mock/angular/src/app/app.ts */\n:host .liquid-glass-notification {\n  position: fixed;\n  bottom: 20px;\n  left: 50%;\n  transform: translateX(-50%);\n  width: 90%;\n  max-width: 400px;\n  background-color: rgba(255, 255, 255, 0.6);\n  backdrop-filter: blur(20px) saturate(200%);\n  -webkit-backdrop-filter: blur(20px) saturate(200%);\n  border-radius: 13px;\n  border: 1px solid rgba(255, 255, 255, 0.8);\n  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);\n  padding: 12px 18px;\n  display: flex;\n  align-items: center;\n  z-index: 1000;\n  color: white;\n  font-family:\n    "SF Pro Text",\n    "Helvetica Neue",\n    "Helvetica",\n    "Arial",\n    sans-serif;\n}\n:host .notification-content {\n  display: flex;\n  align-items: center;\n  width: 100%;\n}\n:host .notification-image {\n  width: 48px;\n  height: 48px;\n  border-radius: 10px;\n  object-fit: cover;\n  margin-right: 12px;\n  flex-shrink: 0;\n}\n:host .notification-text h3 {\n  margin: 0;\n  font-size: 16px;\n  font-weight: 600;\n  color: white;\n  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n}\n:host .notification-text p {\n  margin: 5px 0 0;\n  font-size: 13px;\n  line-height: 1.3;\n  color: rgba(255, 255, 255, 0.8);\n  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n}\n@media (max-width: 600px) {\n  :host .liquid-glass-notification {\n    width: 95%;\n    padding: 12px;\n    bottom: 15px;\n  }\n  :host .notification-image {\n    width: 40px;\n    height: 40px;\n    margin-right: 10px;\n  }\n  :host .notification-text h3 {\n    font-size: 14px;\n  }\n  :host .notification-text p {\n    font-size: 12px;\n  }\n}\n/*# sourceMappingURL=app.css.map */\n'] }]
   }], null, null);
 })();
 (() => {
-  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 20 });
+  (typeof ngDevMode === "undefined" || ngDevMode) && \u0275setClassDebugInfo(App, { className: "App", filePath: "src/app/app.ts", lineNumber: 100 });
 })();
 
 // src/main.ts
