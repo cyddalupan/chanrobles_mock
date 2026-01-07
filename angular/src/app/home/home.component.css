@@ -10,16 +10,16 @@
 .search-bar-container {
   display: flex;
   justify-content: center;
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box; /* Include padding in the element's total width and height */
-  background: rgba(255, 255, 255, 0.1); /* Very light transparent background */
-  border-radius: 12px; /* Slightly more rounded corners for a modern look */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
-  backdrop-filter: blur(10px); /* Frosted glass effect */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  margin-bottom: 20px; /* Space below the search bar */
+  padding: 15px; /* Slightly reduced padding */
+  width: 90%; /* Reduce width from 100% */
+  max-width: 700px; /* Set a max-width for the container */
+  margin: 0 auto 20px auto; /* Center the container and add bottom margin */
+  background: rgba(255, 255, 255, 0.2); /* Slightly increased opacity for better readability */
+  border-radius: 15px; /* Slightly more rounded corners */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Slightly stronger shadow for better definition */
+  border: 1px solid rgba(255, 255, 255, 0.4); /* Slightly less transparent border */
+  backdrop-filter: blur(8px); /* Reduced blur for better readability */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
 }
 
 .search-input {
