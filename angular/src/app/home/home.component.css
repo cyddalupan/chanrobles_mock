@@ -56,17 +56,22 @@
   color: white !important;
 }
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-input::placeholder {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: white !important;
   opacity: 1 !important; /* Ensure placeholder is fully visible */
 }
 :host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-label {
   color: white !important;
 }
+/* Ensure label color is white when focused */
 :host ::ng-deep .search-liquid-glass .search-input.mat-focused .mat-mdc-form-field-label {
   color: white !important;
 }
+/* Ensure label color is white when floating (after input) */
+:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-floating-label {
+  color: white !important;
+}
 :host ::ng-deep .search-liquid-glass .search-input mat-icon {
-  color: rgba(0,0,0,0.7) !important; /* Ensure icon is visible */
+  color: rgba(0,0,0,0.7) !important; /* Reverted to dark as per user request */
 }
 
 /* Change the default underline/border color to white (for both normal and focused states) */
