@@ -59,19 +59,20 @@
   color: white !important;
   opacity: 1 !important; /* Ensure placeholder is fully visible */
 }
-:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-form-field-label {
+/* Floating label color */
+:host ::ng-deep .search-liquid-glass .search-input .mdc-floating-label {
   color: white !important;
 }
-/* Ensure label color is white when focused */
-:host ::ng-deep .search-liquid-glass .search-input.mat-focused .mat-mdc-form-field-label {
+/* Ensure floating label is white when focused */
+:host ::ng-deep .search-liquid-glass .search-input.mat-focused .mdc-floating-label {
   color: white !important;
 }
-/* Ensure label color is white when floating (after input) */
-:host ::ng-deep .search-liquid-glass .search-input .mat-mdc-floating-label {
+/* Ensure floating label is white when invalid */
+:host ::ng-deep .search-liquid-glass .search-input.mat-form-field-invalid .mdc-floating-label {
   color: white !important;
 }
 :host ::ng-deep .search-liquid-glass .search-input mat-icon {
-  color: rgba(255,255,255,0.7) !important; /* Ensure icon is visible and white */
+  color: white !important; /* Ensure icon is visible and white */
 }
 
 /* Outline border color for mat-form-field with appearance="outline" */
