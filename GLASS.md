@@ -139,7 +139,6 @@ This version floats at the bottom of the viewport and does not affect the layout
   font-size: 16px;
   font-weight: 600;
   color: white;
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .notification-text p {
@@ -147,7 +146,6 @@ This version floats at the bottom of the viewport and does not affect the layout
   font-size: 13px;
   line-height: 1.3;
   color: rgba(255, 255, 255, 0.8);
-  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive adjustments for Floating Version */
