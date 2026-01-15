@@ -17,4 +17,4 @@ git commit -m "feat: Automated build and stage for Angular application changes"
 echo "--- Pushing changes to remote ---"
 git push origin HEAD:master
 
-echo "--- Build, staging, commit, and push complete. ---"
+echo "--- Build, staging, commit, and push complete. ---""

@@ -126,7 +126,8 @@ if (strpos($query, '/* AGGREGATE_COURSES */') !== false) {
                 'short_description' => $row['short_description'],
                 'upcoming_image_thumbnail' => $row['upcoming_image_thumbnail'],
                 'price' => $row['price'],
-                'level' => $row['level']
+                'level' => $row['level'],
+                'list_order' => $row['list_order']
             ];
         }
     }
