@@ -261,8 +261,8 @@
 .history-button span {
   font-size: 1.1rem !important;
   font-weight: bold !important;
-  color: red !important; /* Temporary: Set color to red to verify style application */
-  display: inline-block !important; /* Ensure block-level properties are applied */
+  color: white !important; /* Set text color to white for better readability */
+  display: inline-block !important;
 }
 
 .history-button span {
