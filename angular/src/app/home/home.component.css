@@ -238,10 +238,11 @@
 }
 
 .course-actions button {
-  font-size: 0.95rem; /* Smaller font size for all buttons */
+  font-size: 1.1rem !important; /* Larger font size for all buttons */
   line-height: 1.2;
   height: 36px; /* Consistent button height */
   padding: 0 10px;
+  font-weight: bold !important;
 }
 
 .history-button {
