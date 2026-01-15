@@ -257,6 +257,11 @@
   width: 18px;
 }
 
+.history-button span {
+  font-size: 1rem; /* Slightly larger font size */
+  font-weight: bold; /* Make the text bold */
+}
+
 .no-courses {
   text-align: center;
   padding: 40px;
