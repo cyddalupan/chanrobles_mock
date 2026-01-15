@@ -258,8 +258,8 @@
 }
 
 .history-button span {
-  font-size: 1rem; /* Slightly larger font size */
-  font-weight: bold; /* Make the text bold */
+  font-size: 1rem !important; /* Slightly larger font size */
+  font-weight: bold !important; /* Make the text bold */
 }
 
 .no-courses {
