@@ -56632,13 +56632,14 @@ var ApiService = class _ApiService {
             co.short_description,
             co.upcoming_image_thumbnail,
             co.price,
-            co.level
+            co.level,
+            co.list_order
         FROM
             category c
         LEFT JOIN
             course co ON c.id = co.category_id
         ORDER BY
-            c.name, co.id;
+            c.name, co.list_order ASC, co.id;
       `;
     return this.getDbData(query);
   }

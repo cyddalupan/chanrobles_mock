@@ -36,6 +36,7 @@
 *   **expiry_period**: Expiry period for the course
 *   **upcoming_image_thumbnail**: Thumbnail for upcoming course
 *   **publish_date**: Date of course publication
+*   **list_order**: Order for listing courses (lower values appear first)
 
 ## Table: diag_ans
 
