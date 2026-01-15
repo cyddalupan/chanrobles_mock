@@ -8,6 +8,12 @@ cd angular
 ng build mock-bar --configuration production
 cd ..
 
+echo "--- Cleaning up old build artifacts in /bar ---"
+rm -rf bar/*
+
+echo "--- Copying new build artifacts to /bar ---"
+cp -r angular/dist/mock-bar/. bar/
+
 echo "--- Staging all changes ---"
 git add --all
 
