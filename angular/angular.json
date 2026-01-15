@@ -44,9 +44,7 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all",
-                          "outputPath": "../bar",
-                          "baseHref": "/chanrobles-bar/mock/bar/"            },
+                          "baseHref": "/chanrobles-bar/mock/bar/browser/"            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
