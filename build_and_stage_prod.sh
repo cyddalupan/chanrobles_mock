@@ -8,6 +8,11 @@ cd angular
 ng build mock-bar --configuration production
 cd ..
 
+echo "--- Contents of build output directory: angular/dist/mock-bar ---"
+ls -F angular/dist/mock-bar/
+echo "--- Pausing for inspection. Press Enter to continue ---"
+read
+
 echo "--- Cleaning up old build artifacts in /bar ---"
 rm -rf bar/*
 
