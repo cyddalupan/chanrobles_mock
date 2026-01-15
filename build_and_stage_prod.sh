@@ -12,7 +12,7 @@ echo "--- Cleaning up old build artifacts in /bar ---"
 rm -rf bar/*
 
 echo "--- Copying new build artifacts to /bar ---"
-cp -r angular/dist/mock-bar/. bar/
+cp -r angular/dist/mock-bar/browser/. bar/
 
 echo "--- Staging all changes ---"
 git add --all

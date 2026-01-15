@@ -6,7 +6,7 @@ set -e
 echo "--- Building Angular application ---"
 cd angular
 npm run build
-cd ..
+cp -r angular/dist/mock-bar/browser/. bar/
 
 echo "--- Staging all changes ---"
 git add --all
