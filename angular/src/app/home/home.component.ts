@@ -30,6 +30,7 @@ interface Course {
   progressText: string;
   progressBarPercentage: number;
   averageScore: string;
+  list_order: number; // Add list_order here
 }
 
 @Component({
@@ -128,6 +129,9 @@ export class HomeComponent implements OnInit {
             hasTakenExam: (status?.answeredCount || 0) > 0 // User has taken exam if answered any questions
           };
         });
+
+        // Explicitly sort all courses by list_order before further processing
+        processedCourses.sort((a, b) => a.list_order - b.list_order);
 
         this.allCourses.set(this.processCoursesForMetrics(processedCourses)); // Update allCourses signal
         this.loading.set(false); // Set loading to false after successful data fetching
