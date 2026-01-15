@@ -249,6 +249,9 @@
   display: flex;
   align-items: center;
   justify-content: center; /* Center content in button */
+  background-color: #4CAF50 !important; /* Green background */
+  border: none !important; /* Remove border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important; /* Add a subtle shadow for depth */
 }
 
 .history-button mat-icon {
@@ -256,6 +259,7 @@
   font-size: 18px; /* Smaller icon size */
   height: 18px;
   width: 18px;
+  color: white !important; /* Ensure icon is white */
 }
 
 .history-button span {
